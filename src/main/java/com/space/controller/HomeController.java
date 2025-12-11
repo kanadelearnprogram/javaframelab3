@@ -1,31 +1,98 @@
 package com.space.controller;
 
+import com.space.mapper.FileMapper;
+import com.space.mapper.UserMapper;
+import com.space.model.entity.Files;
 import com.space.model.entity.User;
+import com.space.util.MyBatisUtil;
 import jakarta.servlet.http.HttpServletRequest;
+import org.apache.ibatis.session.SqlSession;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 @Controller
 public class HomeController {
 
-    // 网站首页路由
+    // 网站首页路由（JSTL 渲染文件列表的核心请求）
     @GetMapping("/")
     public String index(HttpServletRequest request, Model model) {
-        User user = (User) request.getSession().getAttribute("loginUser");
-        model.addAttribute("loginUser", user);
-        return "index"; // 返回网站首页
+        // 1. 获取登录用户（传给前端显示）
+        User loginUser = (User) request.getSession().getAttribute("loginUser");
+        model.addAttribute("loginUser", loginUser);
+
+        // 2. 获取所有文件列表（MyBatis 查询）
+        SqlSession sqlSession = null;
+        try {
+            sqlSession = MyBatisUtil.getSession();
+            FileMapper fileMapper = sqlSession.getMapper(FileMapper.class);
+            List<Files> allFiles = fileMapper.findAll(); // 确保该方法返回所有文件
+
+            // 3. 构建「文件所有者ID -> 昵称」的Map（解决前端ownerMap为空的问题）
+            UserMapper userMapper = sqlSession.getMapper(UserMapper.class);
+            Map<Long, String> ownerMap = new HashMap<>();
+            for (Files file : allFiles) {
+                User fileOwner = userMapper.selectUserById(file.getUserId());
+                if (fileOwner != null) {
+                    ownerMap.put(file.getUserId(), fileOwner.getNickname()); // 存入用户ID和昵称的映射
+                } else {
+                    ownerMap.put(file.getUserId(), "未知用户"); // 兜底
+                }
+            }
+
+            // 4. 把数据传入Model（供JSTL渲染）
+            model.addAttribute("allFiles", allFiles); // 文件列表
+            model.addAttribute("ownerMap", ownerMap); // 所有者映射表
+
+        } finally {
+            if (sqlSession != null) {
+                sqlSession.close(); // 确保SqlSession关闭
+            }
+        }
+
+        return "index"; // 返回到index.jsp，此时JSTL会渲染Model中的数据
     }
 
     // 用户首页路由
     @GetMapping("/home")
     public String home(HttpServletRequest request, Model model) {
-        User user = (User) request.getSession().getAttribute("loginUser");
-        if (user == null) {
-            // 如果未登录，重定向到登录页面
-            return "redirect:/user/login";
+        // 1. 校验登录状态
+        User loginUser = (User) request.getSession().getAttribute("loginUser");
+        if (loginUser == null) {
+            return "redirect:/user/login"; // 未登录跳登录
         }
-        model.addAttribute("loginUser", user);
-        return "home"; // 返回用户首页
+        model.addAttribute("loginUser", loginUser);
+
+        // 2. 查询文件列表 + 构建所有者映射（核心补充）
+        SqlSession sqlSession = null;
+        try {
+            sqlSession = MyBatisUtil.getSession();
+            // 2.1 查询当前登录用户的文件列表（也可查所有文件，按需调整）
+            FileMapper fileMapper = sqlSession.getMapper(FileMapper.class);
+            // 若要查“当前用户的文件”：List<Files> allFiles = fileMapper.listFilesByUserId(loginUser.getUserId());
+            // 若要查“所有文件”：List<Files> allFiles = fileMapper.findAll();
+            List<Files> allFiles = fileMapper.findAll(); // 按需选择查询范围
+
+            // 2.2 构建 ownerMap（文件所有者ID -> 昵称）
+            UserMapper userMapper = sqlSession.getMapper(UserMapper.class);
+            Map<Long, String> ownerMap = new HashMap<>();
+            for (Files file : allFiles) {
+                User fileOwner = userMapper.selectUserById(file.getUserId());
+                ownerMap.put(file.getUserId(), fileOwner != null ? fileOwner.getNickname() : "未知用户");
+            }
+
+            // 2.3 把数据传入 Model（供 home.jsp 的 JSTL 渲染）
+            model.addAttribute("allFiles", allFiles);
+            model.addAttribute("ownerMap", ownerMap);
+
+        } finally {
+            if (sqlSession != null) sqlSession.close(); // 确保关闭连接
+        }
+
+        return "home"; // 对应 home.jsp，此时能拿到 allFiles/ownerMap
     }
 }

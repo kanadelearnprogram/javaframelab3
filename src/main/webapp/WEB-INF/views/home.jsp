@@ -32,10 +32,42 @@
                     <p>欢迎回来，您可以开始管理您的文件了。</p>
                     <div class="actions">
                         <a href="<c:url value='/user/size'/>" class="btn primary">查看存储空间</a>
-                        <a href="#" class="btn secondary">文件管理</a>
+                        <a href="<c:url value='/upload'/>" class="btn secondary">文件管理</a>
                     </div>
                 </div>
             </c:if>
+        </section>
+
+        <!-- 显示所有文件 -->
+        <section class="files-section">
+            <h3>所有文件</h3>
+            <c:choose>
+                <c:when test="${not empty allFiles}">
+                    <table class="files-table">
+                        <thead>
+                            <tr>
+                                <th>所有者</th>
+                                <th>文件名</th>
+                                <th>下载量</th>
+                                <th>更新时间</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <c:forEach var="file" items="${allFiles}">
+                                <tr>
+                                    <td>${file.userId}</td>
+                                    <td>${file.fileName}</td>
+                                    <td>${file.downloadCount}</td>
+                                    <td>${file.uploadTime}</td>
+                                </tr>
+                            </c:forEach>
+                        </tbody>
+                    </table>
+                </c:when>
+                <c:otherwise>
+                    <p>暂无文件</p>
+                </c:otherwise>
+            </c:choose>
         </section>
 
         <section class="features">

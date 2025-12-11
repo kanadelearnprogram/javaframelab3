@@ -20,5 +20,6 @@ public class Files {
     private String status;
     private Integer isTop;
     private Integer downloadCount;
-    private String description;
+    private Integer review;
+    private Integer isDelete;
 }
