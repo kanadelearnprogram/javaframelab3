@@ -1,8 +1,8 @@
 package com.space.controller;
 
 import com.space.model.entity.User;
-import com.space.service.SpaceService;
 import com.space.service.UserService;
+import com.space.service.impl.UserServiceImpl;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -16,13 +16,16 @@ import org.springframework.web.bind.annotation.RequestParam;
 @RequestMapping("/user")
 public class UserController {
     
-    @Autowired
-    private UserService userService;
-    /*@Autowired
-    private SpaceService spaceService;*/
+    UserService userService = new UserServiceImpl();//草泥马不许动就这么写
     
     @GetMapping("/login")
-    public String showLogin() {
+    public String showLogin(HttpServletRequest request) {
+        // 检查用户是否已经登录
+        User user = (User) request.getSession().getAttribute("loginUser");
+        if (user != null) {
+            // 如果已登录，重定向到用户首页
+            return "redirect:/home";
+        }
         return "user/login";
     }
 
@@ -38,7 +41,8 @@ public class UserController {
                 return "user/login";
             }
             request.getSession().setAttribute("loginUser",user);
-            return "redirect:/user/index"; // 登录成功后跳转到主页
+            // 登录成功后跳转到用户首页
+            return "redirect:/home";
         } catch (Exception e) {
             model.addAttribute("error", "登录异常：" + e.getMessage());
             return "user/login";
@@ -46,7 +50,13 @@ public class UserController {
     }
     
     @GetMapping("/register")
-    public String showRegister() {
+    public String showRegister(HttpServletRequest request) {
+        // 检查用户是否已经登录
+        User user = (User) request.getSession().getAttribute("loginUser");
+        if (user != null) {
+            // 如果已登录，重定向到用户首页
+            return "redirect:/home";
+        }
         return "user/register";
     }
 
@@ -67,8 +77,6 @@ public class UserController {
 
             boolean success = userService.registerUser(user);
 
-            //boolean spaceSuccess = spaceService.addSpace()
-
             if (success) {
                 model.addAttribute("message", "注册成功！请登录");
                 return "redirect:/user/login";
@@ -82,32 +90,23 @@ public class UserController {
         }
     }
 
-    @GetMapping("/index")
-    public String index(HttpServletRequest request, Model model) {
-        User user = (User) request.getSession().getAttribute("loginUser");
-        model.addAttribute("loginUser", user);
-        return "index";
-    }
-
     @GetMapping("/logout")
     public String logout(HttpServletRequest request) {
         request.getSession().removeAttribute("loginUser");
-        return "redirect:/user/login";
+        return "redirect:/";
     }
     
-    @GetMapping("/")
-    public String showIndex(HttpServletRequest request, Model model) {
-        User user = (User) request.getSession().getAttribute("loginUser");
-        model.addAttribute("loginUser", user);
-        return "index";
-    }
-
     // 在用户首页展示 usedSize/totalSize
     @GetMapping("/size")
-    public String showSize(HttpServletRequest request){
+    public String showSize(HttpServletRequest request, Model model){
         User user = (User) request.getSession().getAttribute("loginUser");
+        if (user == null) {
+            return "redirect:/user/login";
+        }
         Long userId = user.getUserId();
-        return null;
+        // TODO: 添加实际的空间大小查询逻辑
+        model.addAttribute("userId", userId);
+        return "user/space";
     }
 
 }

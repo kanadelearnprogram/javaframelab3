@@ -4,7 +4,7 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>云存空间 - 首页</title>
+    <title>云存空间 - 用户首页</title>
     <link rel="stylesheet" type="text/css" href="<c:url value='/static/css/style.css'/>">
 </head>
 <body>
@@ -12,29 +12,28 @@
         <header>
             <h1>云存空间</h1>
             <nav>
+                <a href="<c:url value='/'/>">首页</a>
                 <c:if test="${empty loginUser}">
                     <a href="<c:url value='/user/login'/>">登录</a>
                     <a href="<c:url value='/user/register'/>">注册</a>
                 </c:if>
                 <c:if test="${not empty loginUser}">
-                    <a href="<c:url value='/home'/>">进入个人空间</a>
+                    <span>欢迎，${loginUser.nickname}!</span>
                     <a href="<c:url value='/user/logout'/>">退出</a>
                 </c:if>
             </nav>
         </header>
 
         <section class="hero">
-            <h2>安全、便捷的云存储服务</h2>
-            <p>为您提供高达5MB的免费存储空间，随时随地访问您的文件。</p>
-            <c:if test="${empty loginUser}">
-                <div class="cta-buttons">
-                    <a href="<c:url value='/user/register'/>" class="btn primary">立即注册</a>
-                    <a href="<c:url value='/user/login'/>" class="btn secondary">用户登录</a>
-                </div>
-            </c:if>
+            <h2>用户控制台</h2>
             <c:if test="${not empty loginUser}">
-                <div class="cta-buttons">
-                    <a href="<c:url value='/home'/>" class="btn primary">进入个人空间</a>
+                <div class="user-dashboard">
+                    <h3>我的空间</h3>
+                    <p>欢迎回来，您可以开始管理您的文件了。</p>
+                    <div class="actions">
+                        <a href="<c:url value='/user/size'/>" class="btn primary">查看存储空间</a>
+                        <a href="#" class="btn secondary">文件管理</a>
+                    </div>
                 </div>
             </c:if>
         </section>

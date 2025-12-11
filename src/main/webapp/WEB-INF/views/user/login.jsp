@@ -8,7 +8,7 @@
     <link rel="stylesheet" type="text/css" href="<c:url value='/static/css/style.css'/>">
 </head>
 <body>
-    <div class="container">
+    <div class="form-container">
         <h2>用户登录</h2>
         
         <c:if test="${not empty error}">
@@ -35,6 +35,7 @@
         
         <div class="links">
             <p>还没有账号? <a href="<c:url value='/user/register'/>">立即注册</a></p>
+            <p><a href="<c:url value='/'/>">返回首页</a></p>
         </div>
     </div>
 </body>

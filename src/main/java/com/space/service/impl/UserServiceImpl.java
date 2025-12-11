@@ -9,7 +9,7 @@ import com.space.util.MyBatisUtil;
 import org.apache.ibatis.session.SqlSession;
 import org.springframework.stereotype.Service;
 
-@Service
+
 public class UserServiceImpl implements UserService {
 
     // 使用事务确保用户注册和空间初始化的原子性

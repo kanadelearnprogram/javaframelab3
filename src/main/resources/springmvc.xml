@@ -20,6 +20,10 @@
     <!-- 扫描Service注解 -->
     <context:component-scan base-package="com.space.service" />
 
+    <!-- 文件上传解析器 -->
+    <bean id="multipartResolver" class="org.springframework.web.multipart.support.StandardServletMultipartResolver">
+    </bean>
+    
     <!-- 视图解析器 -->
     <bean class="org.springframework.web.servlet.view.InternalResourceViewResolver">
         <property name="prefix" value="/WEB-INF/views/" />
