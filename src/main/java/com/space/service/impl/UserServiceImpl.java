@@ -66,7 +66,9 @@ public class UserServiceImpl implements UserService {
         try {
             UserMapper userMapper = sqlSession.getMapper(UserMapper.class);
             // 实际应用中应进行密码加密比较
-            return userMapper.login(account, password);
+            User login = userMapper.login(account, password);
+            //System.out.println(login);
+            return login;
         } finally {
             sqlSession.close();
         }

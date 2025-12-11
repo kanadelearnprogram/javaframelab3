@@ -6,6 +6,29 @@
     <meta charset="UTF-8">
     <title>存储空间详情</title>
     <link rel="stylesheet" type="text/css" href="<c:url value='/static/css/style.css'/>">
+    <style>
+        .uploaded-files ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        
+        .uploaded-files li {
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .file-actions {
+            margin-left: 10px;
+        }
+        
+        .file-actions .btn {
+            padding: 5px 10px;
+            font-size: 12px;
+        }
+    </style>
 </head>
 <body>
     <div class="container">
@@ -31,6 +54,28 @@
                 </div>
                 <button type="submit" class="btn primary">上传文件</button>
             </form>
+        </div>
+        
+        <!-- 已上传文件列表 -->
+        <div class="uploaded-files">
+            <h3>已上传文件</h3>
+            <c:choose>
+                <c:when test="${not empty uploadedFiles && uploadedFiles.size() > 0}">
+                    <ul>
+                        <c:forEach var="file" items="${uploadedFiles}">
+                            <li>
+                                <span>${file}</span>
+                                <span class="file-actions">
+                                    <a href="<c:url value='/download/${file}'/>" class="btn secondary">下载</a>
+                                </span>
+                            </li>
+                        </c:forEach>
+                    </ul>
+                </c:when>
+                <c:otherwise>
+                    <p>暂无上传文件</p>
+                </c:otherwise>
+            </c:choose>
         </div>
         
         <div class="links">
