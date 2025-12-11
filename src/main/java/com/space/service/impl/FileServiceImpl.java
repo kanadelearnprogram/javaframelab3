@@ -8,6 +8,8 @@ import com.space.util.MyBatisUtil;
 import org.apache.ibatis.session.SqlSession;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 public class FileServiceImpl implements FileService {
     
     @Override
@@ -37,6 +39,47 @@ public class FileServiceImpl implements FileService {
         } catch (Exception e) {
             sqlSession.rollback();
             throw new RuntimeException("文件保存失败：" + e.getMessage());
+        } finally {
+            sqlSession.close();
+        }
+    }
+
+    @Override
+    public List<Files> listFile(Long userId) {
+        SqlSession sqlSession = MyBatisUtil.getSession();
+
+        FileMapper fileMapper = sqlSession.getMapper(FileMapper.class);
+
+        // 保存文件信息
+        List<Files> list = fileMapper.findByUserId(userId);
+        
+        sqlSession.close();
+
+        return list;
+    }
+    
+    @Override
+    public boolean incrementDownloadCount(Long fileId) {
+        SqlSession sqlSession = MyBatisUtil.getSession();
+        try {
+            FileMapper fileMapper = sqlSession.getMapper(FileMapper.class);
+            boolean result = fileMapper.incrementDownloadCount(fileId);
+            sqlSession.commit();
+            return result;
+        } catch (Exception e) {
+            sqlSession.rollback();
+            throw new RuntimeException("更新下载次数失败：" + e.getMessage());
+        } finally {
+            sqlSession.close();
+        }
+    }
+    
+    @Override
+    public Integer getDownloadCount(Long fileId) {
+        SqlSession sqlSession = MyBatisUtil.getSession();
+        try {
+            FileMapper fileMapper = sqlSession.getMapper(FileMapper.class);
+            return fileMapper.getDownloadCount(fileId);
         } finally {
             sqlSession.close();
         }

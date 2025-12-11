@@ -28,6 +28,13 @@
             padding: 5px 10px;
             font-size: 12px;
         }
+        
+        /* 添加文件选择样式 */
+        input[type="file"] {
+            border: 1px solid #ddd;
+            padding: 5px;
+            border-radius: 3px;
+        }
     </style>
 </head>
 <body>
@@ -64,9 +71,9 @@
                     <ul>
                         <c:forEach var="file" items="${uploadedFiles}">
                             <li>
-                                <span>${file}</span>
+                                <span>${file.fileName}</span>
                                 <span class="file-actions">
-                                    <a href="<c:url value='/download/${file}'/>" class="btn secondary">下载</a>
+                                    <a href="<c:url value='/download/${file.id}'/>" class="btn secondary">下载</a>
                                 </span>
                             </li>
                         </c:forEach>
@@ -82,5 +89,13 @@
             <a href="<c:url value='/home'/>">返回首页</a>
         </div>
     </div>
+    
+    <script>
+        // 添加JavaScript代码来更新文件选择提示
+        document.getElementById('file').addEventListener('change', function(e) {
+            const fileName = e.target.files[0] ? e.target.files[0].name : '未选择文件';
+            e.target.previousElementSibling.textContent = '选择文件: ' + fileName;
+        });
+    </script>
 </body>
 </html>

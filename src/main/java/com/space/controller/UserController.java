@@ -3,6 +3,9 @@ package com.space.controller;
 import com.space.model.entity.User;
 import com.space.service.UserService;
 import com.space.service.impl.UserServiceImpl;
+import com.space.service.FileService;
+import com.space.service.impl.FileServiceImpl;
+import com.space.model.entity.Files;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -12,11 +15,14 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import java.util.List;
+
 @Controller
 @RequestMapping("/user")
 public class UserController {
     
     UserService userService = new UserServiceImpl();//草泥马不许动就这么写
+    FileService fileService = new FileServiceImpl();
     
     @GetMapping("/login")
     public String showLogin(HttpServletRequest request) {
@@ -104,7 +110,10 @@ public class UserController {
             return "redirect:/user/login";
         }
         Long userId = user.getUserId();
-        // TODO: 添加实际的空间大小查询逻辑
+        
+        // 获取用户已上传的文件列表
+        List<Files> uploadedFiles = fileService.listFile(userId);
+        model.addAttribute("uploadedFiles", uploadedFiles);
         model.addAttribute("userId", userId);
         return "user/space";
     }

@@ -19,10 +19,10 @@ public interface FileMapper {
      * @param id 文件ID
      * @return 文件对象
      */
-    @Select("SELECT id, user_id, file_name, file_path, file_size, file_type, upload_time, status, is_public, download_count, description " +
-            "FROM file WHERE id = #{id}")
+    @Select("SELECT file_id, user_id, file_name, file_path, file_size, file_type, upload_time, status, download_count " +
+            "FROM t_file WHERE file_id = #{id}")
     @Results({
-        @Result(property = "id", column = "id"),
+        @Result(property = "id", column = "file_id"),
         @Result(property = "userId", column = "user_id"),
         @Result(property = "fileName", column = "file_name"),
         @Result(property = "filePath", column = "file_path"),
@@ -30,9 +30,7 @@ public interface FileMapper {
         @Result(property = "fileType", column = "file_type"),
         @Result(property = "uploadTime", column = "upload_time"),
         @Result(property = "status", column = "status"),
-        @Result(property = "isPublic", column = "is_public"),
-        @Result(property = "downloadCount", column = "download_count"),
-        @Result(property = "description", column = "description")
+        @Result(property = "downloadCount", column = "download_count")
     })
     Files findById(int id);
     
@@ -41,10 +39,10 @@ public interface FileMapper {
      * @param userId 用户ID
      * @return 文件列表
      */
-    @Select("SELECT id, user_id, file_name, file_path, file_size, file_type, upload_time, status, is_public, download_count, description " +
-            "FROM file WHERE user_id = #{userId}")
+    @Select("SELECT file_id, user_id, file_name, file_path, file_size, file_type, upload_time, status, download_count " +
+            "FROM t_file WHERE user_id = #{userId}")
     @Results({
-        @Result(property = "id", column = "id"),
+        @Result(property = "id", column = "file_id"),
         @Result(property = "userId", column = "user_id"),
         @Result(property = "fileName", column = "file_name"),
         @Result(property = "filePath", column = "file_path"),
@@ -52,21 +50,19 @@ public interface FileMapper {
         @Result(property = "fileType", column = "file_type"),
         @Result(property = "uploadTime", column = "upload_time"),
         @Result(property = "status", column = "status"),
-        @Result(property = "isPublic", column = "is_public"),
-        @Result(property = "downloadCount", column = "download_count"),
-        @Result(property = "description", column = "description")
+        @Result(property = "downloadCount", column = "download_count")
     })
-    List<Files> findByUserId(int userId);
+    List<Files> findByUserId(Long userId);
     
 
     /**
      * 查找所有文件
      * @return 文件列表
      */
-    @Select("SELECT id, user_id, file_name, file_path, file_size, file_type, upload_time, status, is_public, download_count, description " +
-            "FROM file")
+    @Select("SELECT file_id, user_id, file_name, file_path, file_size, file_type, upload_time, status, download_count " +
+            "FROM t_file")
     @Results({
-        @Result(property = "id", column = "id"),
+        @Result(property = "id", column = "file_id"),
         @Result(property = "userId", column = "user_id"),
         @Result(property = "fileName", column = "file_name"),
         @Result(property = "filePath", column = "file_path"),
@@ -74,9 +70,24 @@ public interface FileMapper {
         @Result(property = "fileType", column = "file_type"),
         @Result(property = "uploadTime", column = "upload_time"),
         @Result(property = "status", column = "status"),
-        @Result(property = "isPublic", column = "is_public"),
-        @Result(property = "downloadCount", column = "download_count"),
-        @Result(property = "description", column = "description")
+        @Result(property = "downloadCount", column = "download_count")
     })
     List<Files> findAll();
+    
+    /**
+     * 增加文件下载次数
+     * @param fileId 文件ID
+     * @return 更新是否成功
+     */
+    @Update("UPDATE t_file SET download_count = download_count + 1 WHERE file_id = #{fileId}")
+    boolean incrementDownloadCount(@Param("fileId") Long fileId);
+
+    /**
+     * 获取文件下载次数
+     * @param fileId 文件ID
+     * @return 下载次数
+     */
+    @Select("SELECT download_count FROM t_file WHERE file_id = #{fileId}")
+    Integer getDownloadCount(@Param("fileId") Long fileId);
+
 }

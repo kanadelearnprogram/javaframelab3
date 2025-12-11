@@ -5,9 +5,7 @@ import com.space.mapper.SpaceMapper;
 import com.space.model.entity.Files;
 import com.space.model.entity.User;
 import com.space.service.FileService;
-import com.space.service.SpaceService;
 import com.space.service.impl.FileServiceImpl;
-import com.space.service.impl.SpaceServiceImpl;
 import com.space.util.MyBatisUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -27,16 +25,25 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
+import java.util.List;
 
 
 @Controller
 public class FilesController {
 
     FileService fileService = new FileServiceImpl();
-    SpaceService spaceService = new SpaceServiceImpl();
     //todo 文件上传下载
     @GetMapping("/upload")
-    public String showUploadForm() {
+    public String showUploadForm(HttpServletRequest request, Model model) {
+        User user = (User) request.getSession().getAttribute("loginUser");
+        if (user == null) {
+            return "redirect:/user/login";
+        }
+
+        List<Files> uploadedFiles = fileService.listFile(user.getUserId());
+        model.addAttribute("uploadedFiles", uploadedFiles);
+        model.addAttribute("userId", user.getUserId());
         return "user/space";
     }
     
@@ -86,7 +93,7 @@ public class FilesController {
             files.setFileName(originalFilename);
             files.setFilePath(String.valueOf(uploadDir));
             files.setFileSize(size);
-            //todo 匹配对应类型
+            // todo 匹配对应类型
             files.setFileType("other");
             files.setStatus("待审核");
             files.setIsTop(0); // 添加默认值，解决is_top不能为null的问题
@@ -107,8 +114,8 @@ public class FilesController {
         return "redirect:/upload";
     }
     
-    @GetMapping("/download/{filename}")
-    public void download(@PathVariable String filename,
+    @GetMapping("/download/{fileId}")
+    public void download(@PathVariable Long fileId,
                          HttpServletRequest request,
                          HttpServletResponse response) throws IOException {
         // 检查用户是否登录
@@ -118,12 +125,40 @@ public class FilesController {
             return;
         }
         
-        // 构建文件路径
-        File uploadDir = new File("E:\\codelab\\javaframealab3\\src\\main\\resources\\files\\" + user.getNickname());
-        File file = new File(uploadDir, filename);
+        // 从数据库获取文件信息
+        SqlSession sqlSession = MyBatisUtil.getSession();
+        FileMapper fileMapper = sqlSession.getMapper(FileMapper.class);
+        Files file = fileMapper.findById(fileId.intValue());
         
         // 检查文件是否存在
-        if (!file.exists()) {
+        if (file == null) {
+            sqlSession.close();
+            response.sendError(HttpServletResponse.SC_NOT_FOUND, "文件不存在");
+            return;
+        }
+        
+        // 检查文件是否属于当前用户
+        if (!file.getUserId().equals(user.getUserId())) {
+            sqlSession.close();
+            response.sendError(HttpServletResponse.SC_FORBIDDEN, "无权访问该文件");
+            return;
+        }
+        
+        // 增加下载次数（通过Service层处理）
+        fileService.incrementDownloadCount(fileId);
+        
+        // 获取下载次数并打印到控制台（可根据需要删除）
+        Integer downloadCount = fileService.getDownloadCount(fileId);
+        System.out.println("文件 " + file.getFileName() + " 下载次数: " + downloadCount);
+        
+        sqlSession.close();
+        
+        // 构建文件路径
+        File uploadDir = new File(file.getFilePath());
+        File actualFile = new File(uploadDir, file.getFileName());
+        
+        // 检查文件是否存在
+        if (!actualFile.exists()) {
             response.sendError(HttpServletResponse.SC_NOT_FOUND, "文件不存在");
             return;
         }
@@ -131,11 +166,11 @@ public class FilesController {
         // 设置响应头
         response.setContentType("application/octet-stream");
         response.setHeader("Content-Disposition", "attachment; filename=" + 
-                          URLEncoder.encode(filename, StandardCharsets.UTF_8.toString()));
-        response.setContentLength((int) file.length());
+                          URLEncoder.encode(file.getFileName(), StandardCharsets.UTF_8.toString()));
+        response.setContentLength((int) actualFile.length());
         
         // 写入响应
-        try (FileInputStream fis = new FileInputStream(file);
+        try (FileInputStream fis = new FileInputStream(actualFile);
              OutputStream os = response.getOutputStream()) {
             
             byte[] buffer = new byte[4096];
@@ -145,5 +180,31 @@ public class FilesController {
             }
             os.flush();
         }
+    }
+    
+    @GetMapping("/list")
+    public String listFiles(HttpServletRequest request, Model model) {
+        User user = (User) request.getSession().getAttribute("loginUser");
+        if (user == null) {
+            return "redirect:/user/login";
+        }
+
+        List<Files> uploadedFiles = fileService.listFile(user.getUserId());
+        model.addAttribute("uploadedFiles", uploadedFiles);
+        model.addAttribute("userId", user.getUserId());
+        return "user/space";
+    }
+    
+    // 专门用于获取已上传文件列表的接口
+    @GetMapping("/api/files")
+    public String getUploadedFiles(HttpServletRequest request, Model model) {
+        User user = (User) request.getSession().getAttribute("loginUser");
+        if (user == null) {
+            return "redirect:/user/login";
+        }
+
+        List<Files> uploadedFiles = fileService.listFile(user.getUserId());
+        model.addAttribute("uploadedFiles", uploadedFiles);
+        return "user/space"; // 返回相同的视图，但数据来自不同的接口
     }
 }
