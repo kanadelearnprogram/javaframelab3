@@ -18,18 +18,21 @@
     </properties>
 
     <dependencies>
+        <!-- Servlet API -->
         <dependency>
             <groupId>jakarta.servlet</groupId>
             <artifactId>jakarta.servlet-api</artifactId>
             <version>6.1.0</version>
             <scope>provided</scope>
         </dependency>
+        <!-- WebSocket API -->
         <dependency>
             <groupId>jakarta.websocket</groupId>
             <artifactId>jakarta.websocket-api</artifactId>
             <version>2.2.0</version>
             <scope>provided</scope>
         </dependency>
+        <!-- JUnit -->
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-api</artifactId>
@@ -48,7 +51,7 @@
             <artifactId>lombok</artifactId>
             <version>1.18.30</version>
         </dependency>
-        <!-- https://mvnrepository.com/artifact/org.mybatis/mybatis -->
+        <!-- MyBatis -->
         <dependency>
             <groupId>org.mybatis</groupId>
             <artifactId>mybatis</artifactId>
@@ -64,6 +67,7 @@
             <artifactId>mysql-connector-java</artifactId>
             <version>8.0.33</version>
         </dependency>
+        <!-- Log4j -->
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-webmvc</artifactId>

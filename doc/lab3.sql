@@ -1,8 +1,5 @@
 -- 个人空间系统完整SQL脚本（MySQL 5.7+/8.0+）
 -- 调整说明：1. 移除所有外键约束 2. 删除文件分类表 3. 文件表新增file_type字段存储文件类型
-DROP DATABASE IF EXISTS space_system;
-CREATE DATABASE IF NOT EXISTS space_system DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-USE space_system;
 
 -- ----------------------------
 -- 1. 用户表（t_user）：移除外键相关约束，仅保留核心字段
