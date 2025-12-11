@@ -1,9 +1,10 @@
 package com.space.controller;
 
 import com.space.model.entity.User;
+import com.space.service.SpaceService;
 import com.space.service.UserService;
-import com.space.service.impl.UserServiceImpl;
 import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -15,7 +16,10 @@ import org.springframework.web.bind.annotation.RequestParam;
 @RequestMapping("/user")
 public class UserController {
     
-    private UserService userService = new UserServiceImpl();
+    @Autowired
+    private UserService userService;
+    /*@Autowired
+    private SpaceService spaceService;*/
     
     @GetMapping("/login")
     public String showLogin() {
@@ -63,6 +67,8 @@ public class UserController {
 
             boolean success = userService.registerUser(user);
 
+            //boolean spaceSuccess = spaceService.addSpace()
+
             if (success) {
                 model.addAttribute("message", "注册成功！请登录");
                 return "redirect:/user/login";
@@ -95,4 +101,13 @@ public class UserController {
         model.addAttribute("loginUser", user);
         return "index";
     }
+
+    // 在用户首页展示 usedSize/totalSize
+    @GetMapping("/size")
+    public String showSize(HttpServletRequest request){
+        User user = (User) request.getSession().getAttribute("loginUser");
+        Long userId = user.getUserId();
+        return null;
+    }
+
 }
