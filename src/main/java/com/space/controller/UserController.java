@@ -4,18 +4,23 @@ import com.space.model.entity.User;
 import com.space.service.UserService;
 import com.space.service.impl.UserServiceImpl;
 import jakarta.servlet.http.HttpServletRequest;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import java.util.Date;
-
-@Controller("/user")
+@Controller
+@RequestMapping("/user")
 public class UserController {
-    UserService userService = new UserServiceImpl();
+    
+    private UserService userService = new UserServiceImpl();
+    
+    @GetMapping("/login")
+    public String showLogin() {
+        return "user/login";
+    }
 
     @PostMapping("/login")
     public String login(@RequestParam("account") String account,
@@ -29,13 +34,19 @@ public class UserController {
                 return "user/login";
             }
             request.getSession().setAttribute("loginUser",user);
-            return "redirect:/index"; // 登录成功后跳转到主页
+            return "redirect:/user/index"; // 登录成功后跳转到主页
         } catch (Exception e) {
             model.addAttribute("error", "登录异常：" + e.getMessage());
             return "user/login";
         }
     }
-    // 用户注册处理 - 支持日期类型绑定
+    
+    @GetMapping("/register")
+    public String showRegister() {
+        return "user/register";
+    }
+
+    // 用户注册处理
     @PostMapping("/register")
     public String register(@RequestParam("account") String account,
                            @RequestParam("password") String password,
@@ -50,7 +61,6 @@ public class UserController {
             user.setRole("user");
             user.setStatus(1); // 正常状态
 
-            // 调用服务层注册用户，同时初始化用户空间
             boolean success = userService.registerUser(user);
 
             if (success) {
@@ -64,5 +74,25 @@ public class UserController {
             model.addAttribute("error", "注册异常：" + e.getMessage());
             return "user/register";
         }
+    }
+
+    @GetMapping("/index")
+    public String index(HttpServletRequest request, Model model) {
+        User user = (User) request.getSession().getAttribute("loginUser");
+        model.addAttribute("loginUser", user);
+        return "index";
+    }
+
+    @GetMapping("/logout")
+    public String logout(HttpServletRequest request) {
+        request.getSession().removeAttribute("loginUser");
+        return "redirect:/user/login";
+    }
+    
+    @GetMapping("/")
+    public String showIndex(HttpServletRequest request, Model model) {
+        User user = (User) request.getSession().getAttribute("loginUser");
+        model.addAttribute("loginUser", user);
+        return "index";
     }
 }

@@ -4,9 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.math.BigInteger;
 import java.util.Date;
-import java.sql.Timestamp;
 
 /**
  * 用户实体类
@@ -31,8 +29,7 @@ public class User {
     // 角色：管理员/普通用户/游客/系统用户
     private String role;
     // 创建时间
-    private Timestamp createTime;
+    private Date createTime;
     // 更新时间
-    private Timestamp updateTime;
-
+    private Date updateTime;
 }
