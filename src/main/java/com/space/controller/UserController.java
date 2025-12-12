@@ -104,17 +104,21 @@ public class UserController {
     
     // 在用户首页展示 usedSize/totalSize
     @GetMapping("/size")
-    public String showSize(HttpServletRequest request, Model model){
+    public String showSize(HttpServletRequest request, Model model,
+                          @RequestParam(defaultValue = "1") int pageNum,
+                          @RequestParam(defaultValue = "5") int pageSize){
         User user = (User) request.getSession().getAttribute("loginUser");
         if (user == null) {
             return "redirect:/user/login";
         }
         Long userId = user.getUserId();
         
-        // 获取用户已上传的文件列表
-        List<Files> uploadedFiles = fileService.listFile(userId);
+        // 获取用户已上传的文件列表（带分页）
+        List<Files> uploadedFiles = fileService.listFileWithPagination(userId, pageNum, pageSize);
         model.addAttribute("uploadedFiles", uploadedFiles);
         model.addAttribute("userId", userId);
+        model.addAttribute("pageNum", pageNum);
+        model.addAttribute("pageSize", pageSize);
         return "user/space";
     }
 

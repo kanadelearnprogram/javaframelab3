@@ -35,6 +35,17 @@
             padding: 5px;
             border-radius: 3px;
         }
+        
+        /* 分页样式 */
+        .pagination {
+            margin-top: 20px;
+            text-align: center;
+        }
+        
+        .pagination .btn {
+            margin: 0 5px;
+            padding: 5px 10px;
+        }
     </style>
 </head>
 <body>
@@ -64,6 +75,8 @@
         </div>
         
         <!-- 已上传文件列表 -->
+<%--        todo 增加 冻结/解冻 按钮 删除 链接--%>
+<%--        todo 分页 pagesize pagenum --%>
         <div class="uploaded-files">
             <h3>已上传文件</h3>
             <c:choose>
@@ -78,6 +91,19 @@
                             </li>
                         </c:forEach>
                     </ul>
+                    
+                    <!-- 分页控件  todo 添加选择页数分页-->
+                    <div class="pagination">
+                        <c:if test="${pageNum > 1}">
+                            <a href="<c:url value='/user/size?pageNum=${pageNum - 1}&pageSize=${pageSize}'/>" class="btn">上一页</a>
+                        </c:if>
+                        
+                        <span>第 ${pageNum} 页</span>
+                        
+                        <c:if test="${not empty uploadedFiles && uploadedFiles.size() == pageSize}">
+                            <a href="<c:url value='/user/size?pageNum=${pageNum + 1}&pageSize=${pageSize}'/>" class="btn">下一页</a>
+                        </c:if>
+                    </div>
                 </c:when>
                 <c:otherwise>
                     <p>暂无上传文件</p>

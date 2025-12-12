@@ -59,6 +59,23 @@ public class FileServiceImpl implements FileService {
     }
     
     @Override
+    public List<Files> listFileWithPagination(Long userId, int pageNum, int pageSize) {
+        SqlSession sqlSession = MyBatisUtil.getSession();
+        
+        FileMapper fileMapper = sqlSession.getMapper(FileMapper.class);
+        
+        // 计算偏移量
+        int offset = (pageNum - 1) * pageSize;
+        
+        // 获取分页数据
+        List<Files> list = fileMapper.findByUserIdWithPagination(userId, offset, pageSize);
+        
+        sqlSession.close();
+        
+        return list;
+    }
+    
+    @Override
     public boolean incrementDownloadCount(Long fileId) {
         SqlSession sqlSession = MyBatisUtil.getSession();
         try {
@@ -84,4 +101,37 @@ public class FileServiceImpl implements FileService {
             sqlSession.close();
         }
     }
+
+    @Override
+    public Boolean freezeFile(Long fileId) {
+        SqlSession sqlSession = MyBatisUtil.getSession();
+        try{
+            FileMapper fileMapper = sqlSession.getMapper(FileMapper.class);
+            boolean result = fileMapper.freezeFile(fileId);
+            sqlSession.commit();
+            return result;
+        }catch (Exception e){
+            sqlSession.rollback();
+            throw new RuntimeException("fail to freeze file");
+        }finally {
+            sqlSession.close();
+        }
+    }
+
+    @Override
+    public Boolean unfreezeFile(Long fileId) {
+        SqlSession sqlSession = MyBatisUtil.getSession();
+        try{
+            FileMapper fileMapper = sqlSession.getMapper(FileMapper.class);
+            boolean result = fileMapper.unfreezeFile(fileId);
+            sqlSession.commit();
+            return result;
+        }catch (Exception e){
+            sqlSession.rollback();
+            throw new RuntimeException("fail to unfreeze file");
+        }finally {
+            sqlSession.close();
+        }
+    }
+
 }

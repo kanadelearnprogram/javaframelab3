@@ -1,5 +1,7 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 <!DOCTYPE html>
 <html>
 <head>
@@ -39,6 +41,7 @@
         </section>
 
         <!-- 显示所有文件 -->
+<%--        todo 文件大小MB--%>
         <section class="files-section">
             <h3>所有文件</h3>
             <c:choose>
@@ -48,17 +51,23 @@
                             <tr>
                                 <th>所有者</th>
                                 <th>文件名</th>
+                                <th>文件大小</th>
                                 <th>下载量</th>
                                 <th>更新时间</th>
+                                <th>操作</th>
                             </tr>
                         </thead>
                         <tbody>
                             <c:forEach var="file" items="${allFiles}">
                                 <tr>
-                                    <td>${file.userId}</td>
+                                    <td>${ownerMap[file.userId]}</td>
                                     <td>${file.fileName}</td>
+                                    <td>
+                                        <fmt:formatNumber value="${file.fileSize/1024}" maxFractionDigits="0"/>KB
+                                    </td>
                                     <td>${file.downloadCount}</td>
-                                    <td>${file.uploadTime}</td>
+                                    <td>${fn:substring(file.uploadTime, 0, 10)}</td>
+                                    <td><a href="<c:url value='/download/${file.id}'/>" class="btn secondary">下载</a></td>
                                 </tr>
                             </c:forEach>
                         </tbody>

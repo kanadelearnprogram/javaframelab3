@@ -182,7 +182,7 @@ public class FilesController {
         }
     }
     
-    @GetMapping("/list")
+    /*@GetMapping("/list")
     public String listFiles(HttpServletRequest request, Model model) {
         User user = (User) request.getSession().getAttribute("loginUser");
         if (user == null) {
@@ -193,10 +193,10 @@ public class FilesController {
         model.addAttribute("uploadedFiles", uploadedFiles);
         model.addAttribute("userId", user.getUserId());
         return "user/space";
-    }
+    }*/
     
     // 专门用于获取已上传文件列表的接口
-    @GetMapping("/api/files")
+    /*@GetMapping("/files")
     public String getUploadedFiles(HttpServletRequest request, Model model) {
         User user = (User) request.getSession().getAttribute("loginUser");
         if (user == null) {
@@ -206,5 +206,24 @@ public class FilesController {
         List<Files> uploadedFiles = fileService.listFile(user.getUserId());
         model.addAttribute("uploadedFiles", uploadedFiles);
         return "user/space"; // 返回相同的视图，但数据来自不同的接口
+    }
+    */
+    @PostMapping("/freeze")
+    public String freezeFile(HttpServletRequest request, Long fileId, Model model){
+        User user = (User) request.getSession().getAttribute("loginUser");
+        if (user == null) {
+            return "redirect:/user/login";
+        }
+        fileService.freezeFile(fileId);
+        return "user/space";
+    }
+    @PostMapping("/unfreeze")
+    public String unfreezeFile(HttpServletRequest request, Long fileId, Model model){
+        User user = (User) request.getSession().getAttribute("loginUser");
+        if (user == null) {
+            return "redirect:/user/login";
+        }
+        fileService.unfreezeFile(fileId);
+        return "user/space";
     }
 }

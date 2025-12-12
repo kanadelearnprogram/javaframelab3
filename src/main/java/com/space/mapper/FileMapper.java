@@ -54,13 +54,34 @@ public interface FileMapper {
     })
     List<Files> findByUserId(Long userId);
     
+    /**
+     * 根据用户ID查找文件列表（分页）
+     * @param userId 用户ID
+     * @param offset 偏移量
+     * @param limit 限制数量
+     * @return 文件列表
+     */
+    @Select("SELECT file_id, user_id, file_name, file_path, file_size, file_type, upload_time, status, download_count " +
+            "FROM t_file WHERE user_id = #{userId} LIMIT #{offset}, #{limit}")
+    @Results({
+        @Result(property = "id", column = "file_id"),
+        @Result(property = "userId", column = "user_id"),
+        @Result(property = "fileName", column = "file_name"),
+        @Result(property = "filePath", column = "file_path"),
+        @Result(property = "fileSize", column = "file_size"),
+        @Result(property = "fileType", column = "file_type"),
+        @Result(property = "uploadTime", column = "upload_time"),
+        @Result(property = "status", column = "status"),
+        @Result(property = "downloadCount", column = "download_count")
+    })
+    List<Files> findByUserIdWithPagination(@Param("userId") Long userId, @Param("offset") int offset, @Param("limit") int limit);
 
     /**
      * 查找所有文件
      * @return 文件列表
      */
     @Select("SELECT file_id, user_id, file_name, file_path, file_size, file_type, upload_time, status, download_count " +
-            "FROM t_file")
+            "FROM t_file where is_delete = 0 ")
     @Results({
         @Result(property = "id", column = "file_id"),
         @Result(property = "userId", column = "user_id"),
@@ -90,4 +111,9 @@ public interface FileMapper {
     @Select("SELECT download_count FROM t_file WHERE file_id = #{fileId}")
     Integer getDownloadCount(@Param("fileId") Long fileId);
 
+    @Select("update t_file set status = 1 where file_id = #{fileId}")
+    boolean freezeFile(@Param("fileId") Long fileId);
+
+    @Select("update t_file set status = 0 where file_id = #{fileId}")
+    boolean unfreezeFile(@Param("fileId") Long fileId);
 }
