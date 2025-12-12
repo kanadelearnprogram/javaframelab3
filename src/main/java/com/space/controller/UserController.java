@@ -122,4 +122,11 @@ public class UserController {
         return "user/space";
     }
 
+    // todo空间管理
+    @PostMapping("/addsize")
+    public String addSpaceSize(HttpServletRequest request){
+        User loginUser = (User) request.getSession().getAttribute("loginUser");
+
+        return null;
+    }
 }

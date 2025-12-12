@@ -62,7 +62,7 @@ public interface FileMapper {
      * @return 文件列表
      */
     @Select("SELECT file_id, user_id, file_name, file_path, file_size, file_type, upload_time, status, download_count " +
-            "FROM t_file WHERE user_id = #{userId} LIMIT #{offset}, #{limit}")
+            "FROM t_file WHERE user_id = #{userId} and is_delete = 0 LIMIT #{offset}, #{limit}")
     @Results({
         @Result(property = "id", column = "file_id"),
         @Result(property = "userId", column = "user_id"),
@@ -81,7 +81,7 @@ public interface FileMapper {
      * @return 文件列表
      */
     @Select("SELECT file_id, user_id, file_name, file_path, file_size, file_type, upload_time, status, download_count " +
-            "FROM t_file where is_delete = 0 ")
+            "FROM t_file where is_delete = 0 and status =0")
     @Results({
         @Result(property = "id", column = "file_id"),
         @Result(property = "userId", column = "user_id"),
@@ -111,9 +111,21 @@ public interface FileMapper {
     @Select("SELECT download_count FROM t_file WHERE file_id = #{fileId}")
     Integer getDownloadCount(@Param("fileId") Long fileId);
 
-    @Select("update t_file set status = 1 where file_id = #{fileId}")
+    @Update("update t_file set status = 1 where file_id = #{fileId}")
     boolean freezeFile(@Param("fileId") Long fileId);
 
-    @Select("update t_file set status = 0 where file_id = #{fileId}")
+    @Update("update t_file set status = 0 where file_id = #{fileId}")
     boolean unfreezeFile(@Param("fileId") Long fileId);
+
+    @Update("update t_file set is_delete = 1 where file_id = #{fileId}")
+    boolean deleteFile(@Param("fileId") Long fileId);
+
+    @Select("select file_path from t_file where file_id = #{fileId}")
+    String findPathById(@Param("fileId") Long fileId);
+
+    @Select("select file_size from t_file where file_id = #{fileId}")
+    Long findSizeById(@Param("fileId") Long fileId);
+
+    @Select("select file_name from t_file where file_id = #{fileId}")
+    String findNameById(Long fileId);
 }

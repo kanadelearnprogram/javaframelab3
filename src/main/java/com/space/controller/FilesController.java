@@ -5,7 +5,9 @@ import com.space.mapper.SpaceMapper;
 import com.space.model.entity.Files;
 import com.space.model.entity.User;
 import com.space.service.FileService;
+import com.space.service.SpaceService;
 import com.space.service.impl.FileServiceImpl;
+import com.space.service.impl.SpaceServiceImpl;
 import com.space.util.MyBatisUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -33,6 +35,7 @@ import java.util.List;
 public class FilesController {
 
     FileService fileService = new FileServiceImpl();
+    SpaceService spaceService = new SpaceServiceImpl();
     //todo 文件上传下载
     @GetMapping("/upload")
     public String showUploadForm(HttpServletRequest request, Model model) {
@@ -215,7 +218,7 @@ public class FilesController {
             return "redirect:/user/login";
         }
         fileService.freezeFile(fileId);
-        return "user/space";
+        return "redirect:/user/size";
     }
     @PostMapping("/unfreeze")
     public String unfreezeFile(HttpServletRequest request, Long fileId, Model model){
@@ -224,6 +227,39 @@ public class FilesController {
             return "redirect:/user/login";
         }
         fileService.unfreezeFile(fileId);
-        return "user/space";
+        return "redirect:/user/size";
+    }
+    @PostMapping("/delete")
+    public String deleteFile(HttpServletRequest request, Long fileId, Model model){
+        User user = (User) request.getSession().getAttribute("loginUser");
+        if (user == null) {
+            return "redirect:/user/login";
+        }
+        fileService.deleteFile(fileId);
+        return "redirect:/user/size";
+    }
+    @PostMapping("/update")
+    public String updateFile(HttpServletRequest request, Long fileId,MultipartFile file, Model model) throws IOException {
+        //  更新就覆盖对应文件
+
+        // 更新文件大小
+        User user = (User) request.getSession().getAttribute("loginUser");
+        if (user == null) {
+            return "redirect:/user/login";
+        }
+        String path = fileService.findPathById(fileId);
+        String fileName = fileService.findNameById(fileId);
+        Long fileSize = fileService.findSizeById(fileId);
+        //Long spaceUsedSize = spaceService.findUsedSizeById(user.getUserId());
+
+        // used_size = used_size + #{fileSize}
+        //                           - fileSize + file.getSize()
+        Boolean result = spaceService.updateUsedSize(user.getUserId(), file.getSize() - fileSize);
+        if (result){
+            File dstFile = new File(path +"\\" +fileName);
+            file.transferTo(dstFile);
+        }
+        // todo 添加完整
+        return "redirect:/user/size";
     }
 }

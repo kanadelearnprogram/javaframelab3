@@ -12,4 +12,11 @@ public interface FileService {
     Integer getDownloadCount(Long fileId);
     Boolean freezeFile(Long fileId);
     Boolean unfreezeFile(Long fileId);
+    Boolean deleteFile(Long fileId);
+
+    String findPathById(Long fileId);
+
+    Long findSizeById(Long fileId);
+
+    String findNameById(Long fileId);
 }

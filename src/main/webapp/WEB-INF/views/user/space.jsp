@@ -61,6 +61,8 @@
             <p>存储空间详情页面</p>
             <!-- 这里将来会显示实际的空间使用情况 -->
         </div>
+<%--        todo 空间申请--%>
+<%--        图显示已使用,未使用--%>
         
         <!-- 文件上传表单 -->
         <div class="upload-section">
@@ -75,7 +77,7 @@
         </div>
         
         <!-- 已上传文件列表 -->
-<%--        todo 增加 冻结/解冻 按钮 删除 链接--%>
+<%--         增加 冻结/解冻 按钮 删除 链接--%>
 <%--        todo 分页 pagesize pagenum --%>
         <div class="uploaded-files">
             <h3>已上传文件</h3>
@@ -87,6 +89,33 @@
                                 <span>${file.fileName}</span>
                                 <span class="file-actions">
                                     <a href="<c:url value='/download/${file.id}'/>" class="btn secondary">下载</a>
+                                    <c:choose>
+                                        <c:when test="${file.status == 1}">
+                                            <form action="<c:url value='/unfreeze'/>" method="post" style="display: inline;">
+                                                <input type="hidden" name="fileId" value="${file.id}">
+                                                <button type="submit" class="btn warning">解冻</button>
+                                            </form>
+                                        </c:when>
+                                        <c:otherwise>
+                                            <form action="<c:url value='/freeze'/>" method="post" style="display: inline;">
+                                                <input type="hidden" name="fileId" value="${file.id}">
+                                                <button type="submit" class="btn danger">冻结</button>
+                                            </form>
+                                        </c:otherwise>
+                                    </c:choose>
+                                    
+                                    <!-- 删除按钮 -->
+                                    <form action="<c:url value='/delete'/>" method="post" style="display: inline;" onsubmit="return confirm('确定要删除这个文件吗？')">
+                                        <input type="hidden" name="fileId" value="${file.id}">
+                                        <button type="submit" class="btn danger">删除</button>
+                                    </form>
+                                    
+                                    <!-- 更新按钮 -->
+                                    <form action="<c:url value='/update'/>" method="post" enctype="multipart/form-data" style="display: inline;">
+                                        <input type="hidden" name="fileId" value="${file.id}">
+                                        <input type="file" name="file" style="width: 80px; display: inline-block;">
+                                        <button type="submit" class="btn primary">更新</button>
+                                    </form>
                                 </span>
                             </li>
                         </c:forEach>

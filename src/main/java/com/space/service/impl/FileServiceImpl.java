@@ -134,4 +134,50 @@ public class FileServiceImpl implements FileService {
         }
     }
 
+    @Override
+    public Boolean deleteFile(Long fileId) {
+        SqlSession sqlSession = MyBatisUtil.getSession();
+        try{
+            FileMapper fileMapper = sqlSession.getMapper(FileMapper.class);
+            boolean result = fileMapper.deleteFile(fileId);
+            sqlSession.commit();
+            return result;
+        }catch (Exception e){
+            sqlSession.rollback();
+            throw new RuntimeException("fail to unfreeze file");
+        }finally {
+            sqlSession.close();
+        }
+    }
+
+    @Override
+    public String findPathById(Long fileId) {
+        try (SqlSession sqlSession = MyBatisUtil.getSession()) {
+            FileMapper fileMapper = sqlSession.getMapper(FileMapper.class);
+            return fileMapper.findPathById(fileId);
+        } catch (Exception e) {
+            throw new RuntimeException("fail to unfreeze file");
+        }
+    }
+
+    @Override
+    public Long findSizeById(Long fileId) {
+        try (SqlSession sqlSession = MyBatisUtil.getSession()) {
+            FileMapper fileMapper = sqlSession.getMapper(FileMapper.class);
+            return fileMapper.findSizeById(fileId);
+        } catch (Exception e) {
+            throw new RuntimeException("fail to unfreeze file");
+        }
+    }
+
+    @Override
+    public String findNameById(Long fileId) {
+        try (SqlSession sqlSession = MyBatisUtil.getSession()) {
+            FileMapper fileMapper = sqlSession.getMapper(FileMapper.class);
+            return fileMapper.findNameById(fileId);
+        } catch (Exception e) {
+            throw new RuntimeException("fail to unfreeze file");
+        }
+    }
+
 }
