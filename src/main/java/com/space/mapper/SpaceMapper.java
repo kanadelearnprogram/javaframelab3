@@ -17,7 +17,11 @@ public interface SpaceMapper {
     @Select("select used_size from t_space where user_id = #{userId}")
     Long selectUsedSize(Long userId);
     
-    // 更新space 大小
+    // 更新已使用空间大小
     @Update("UPDATE t_space SET used_size = used_size + #{fileSize} WHERE user_id = #{userId}")
     boolean updateUsedSize(@Param("userId") Long userId, @Param("fileSize") Long fileSize);
+
+    // 更新总空间大小
+    @Update("UPDATE t_space SET total_size = #{newTotalSize} WHERE user_id = #{userId}")
+    boolean updateTotalSize(@Param("userId") Long userId, @Param("newTotalSize") Long newTotalSize);
 }

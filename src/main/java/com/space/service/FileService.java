@@ -13,10 +13,11 @@ public interface FileService {
     Boolean freezeFile(Long fileId);
     Boolean unfreezeFile(Long fileId);
     Boolean deleteFile(Long fileId);
-
     String findPathById(Long fileId);
-
     Long findSizeById(Long fileId);
-
     String findNameById(Long fileId);
+    
+    // 新增的方法
+    Files findById(Long fileId);
+    List<Files> findAll();
 }

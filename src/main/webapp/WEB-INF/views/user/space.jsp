@@ -1,5 +1,6 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 <!DOCTYPE html>
 <html>
 <head>
@@ -7,6 +8,37 @@
     <title>存储空间详情</title>
     <link rel="stylesheet" type="text/css" href="<c:url value='/static/css/style.css'/>">
     <style>
+        .space-info {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .space-bar {
+            width: 100%;
+            height: 20px;
+            background-color: #e9ecef;
+            border-radius: 10px;
+            margin: 10px 0;
+            overflow: hidden;
+        }
+        
+        .space-used {
+            height: 100%;
+            background-color: #007bff;
+            border-radius: 10px;
+        }
+        
+        .space-stats {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 5px;
+            font-size: 14px;
+            color: #6c757d;
+        }
+        
         .uploaded-files ul {
             list-style-type: none;
             padding: 0;
@@ -46,6 +78,14 @@
             margin: 0 5px;
             padding: 5px 10px;
         }
+        
+        .expand-space-form {
+            background-color: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 5px;
+            padding: 15px;
+            margin: 20px 0;
+        }
     </style>
 </head>
 <body>
@@ -56,13 +96,39 @@
             <div class="alert alert-info">${message}</div>
         </c:if>
         
-        <div class="user-info">
-            <h3>用户ID: ${userId}</h3>
-            <p>存储空间详情页面</p>
-            <!-- 这里将来会显示实际的空间使用情况 -->
+        <c:if test="${not empty error}">
+            <div class="alert alert-danger">${error}</div>
+        </c:if>
+        
+        <!-- 空间使用情况 -->
+        <div class="space-info">
+            <h3>空间使用情况</h3>
+            <p>用户ID: ${userId}</p>
+            
+            <div class="space-bar">
+                <div class="space-used" style="width: ${usedSizePercent}%"></div>
+            </div>
+            
+            <div class="space-stats">
+                <span>已使用: ${usedSize} 字节 (<fmt:formatNumber value="${usedSizePercent}" pattern="#.##"/>%)</span>
+                <span>总空间: ${totalSize} 字节</span>
+            </div>
+            
+            <c:if test="${usedSizePercent >= 80}">
+                <div class="alert alert-warning">
+                    您的空间使用率已超过80%，建议及时清理文件或扩容空间。
+                </div>
+            </c:if>
         </div>
-<%--        todo 空间申请--%>
-<%--        图显示已使用,未使用--%>
+        
+        <!-- 空间扩容申请 -->
+        <div class="expand-space-form">
+            <h3>空间扩容</h3>
+            <p>每次扩容增加100MB空间</p>
+            <form action="<c:url value='/user/addsize'/>" method="post">
+                <button type="submit" class="btn primary" onclick="return confirm('确定要申请扩容100MB空间吗？')">申请扩容</button>
+            </form>
+        </div>
         
         <!-- 文件上传表单 -->
         <div class="upload-section">
@@ -77,8 +143,6 @@
         </div>
         
         <!-- 已上传文件列表 -->
-<%--         增加 冻结/解冻 按钮 删除 链接--%>
-<%--        todo 分页 pagesize pagenum --%>
         <div class="uploaded-files">
             <h3>已上传文件</h3>
             <c:choose>
@@ -121,7 +185,7 @@
                         </c:forEach>
                     </ul>
                     
-                    <!-- 分页控件  todo 添加选择页数分页-->
+                    <!-- 分页控件 -->
                     <div class="pagination">
                         <c:if test="${pageNum > 1}">
                             <a href="<c:url value='/user/size?pageNum=${pageNum - 1}&pageSize=${pageSize}'/>" class="btn">上一页</a>

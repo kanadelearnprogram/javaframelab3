@@ -17,7 +17,7 @@ public class Files {
     private Long fileSize;
     private String fileType;
     private LocalDateTime uploadTime;
-    private String status;
+    private Integer status;
     private Integer isTop;
     private Integer downloadCount;
     private Integer review;

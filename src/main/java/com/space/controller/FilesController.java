@@ -98,7 +98,7 @@ public class FilesController {
             files.setFileSize(size);
             // todo 匹配对应类型
             files.setFileType("other");
-            files.setStatus("待审核");
+            files.setStatus(0);
             files.setIsTop(0); // 添加默认值，解决is_top不能为null的问题
             
             // 使用Service保存文件信息到数据库

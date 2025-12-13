@@ -1,7 +1,9 @@
 package com.space.controller;
 
 import com.space.model.entity.User;
+import com.space.service.SpaceService;
 import com.space.service.UserService;
+import com.space.service.impl.SpaceServiceImpl;
 import com.space.service.impl.UserServiceImpl;
 import com.space.service.FileService;
 import com.space.service.impl.FileServiceImpl;
@@ -23,6 +25,7 @@ public class UserController {
     
     UserService userService = new UserServiceImpl();//草泥马不许动就这么写
     FileService fileService = new FileServiceImpl();
+    SpaceService spaceService = new SpaceServiceImpl();
     
     @GetMapping("/login")
     public String showLogin(HttpServletRequest request) {
@@ -113,20 +116,44 @@ public class UserController {
         }
         Long userId = user.getUserId();
         
+        // 获取用户空间信息
+        Long usedSize = spaceService.findUsedSizeById(userId);
+        Long totalSize = spaceService.findTotalSize(userId);
+        double usedSizePercent = totalSize > 0 ? (usedSize * 100.0) / totalSize : 0;
+        
         // 获取用户已上传的文件列表（带分页）
         List<Files> uploadedFiles = fileService.listFileWithPagination(userId, pageNum, pageSize);
         model.addAttribute("uploadedFiles", uploadedFiles);
         model.addAttribute("userId", userId);
         model.addAttribute("pageNum", pageNum);
         model.addAttribute("pageSize", pageSize);
+        model.addAttribute("usedSize", usedSize);
+        model.addAttribute("totalSize", totalSize);
+        model.addAttribute("usedSizePercent", usedSizePercent); // 传递double值而不是字符串
         return "user/space";
     }
 
     // todo空间管理
     @PostMapping("/addsize")
-    public String addSpaceSize(HttpServletRequest request){
+    public String addSpaceSize(HttpServletRequest request, Model model){
         User loginUser = (User) request.getSession().getAttribute("loginUser");
+        if (loginUser == null) {
+            return "redirect:/user/login";
+        }
 
-        return null;
+        Long userId = loginUser.getUserId();
+        Long currentTotalSize = spaceService.findTotalSize(userId);
+        Long newTotalSize = currentTotalSize + 100 * 1024 * 1024L; // 增加100MB
+
+        Boolean result = spaceService.updateTotalSize(userId, newTotalSize);
+        // todo 审核
+        if (result) {
+            model.addAttribute("message", "空间扩容成功！您已增加100MB存储空间。");
+        } else {
+            model.addAttribute("error", "空间扩容失败，请稍后重试。");
+        }
+
+        // 重新加载空间信息
+        return "redirect:/user/size";
     }
 }

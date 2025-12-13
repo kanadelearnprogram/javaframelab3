@@ -144,7 +144,7 @@ public class FileServiceImpl implements FileService {
             return result;
         }catch (Exception e){
             sqlSession.rollback();
-            throw new RuntimeException("fail to unfreeze file");
+            throw new RuntimeException("fail to delete file");
         }finally {
             sqlSession.close();
         }
@@ -156,7 +156,7 @@ public class FileServiceImpl implements FileService {
             FileMapper fileMapper = sqlSession.getMapper(FileMapper.class);
             return fileMapper.findPathById(fileId);
         } catch (Exception e) {
-            throw new RuntimeException("fail to unfreeze file");
+            throw new RuntimeException("fail to find path by id");
         }
     }
 
@@ -166,7 +166,7 @@ public class FileServiceImpl implements FileService {
             FileMapper fileMapper = sqlSession.getMapper(FileMapper.class);
             return fileMapper.findSizeById(fileId);
         } catch (Exception e) {
-            throw new RuntimeException("fail to unfreeze file");
+            throw new RuntimeException("fail to find size by id");
         }
     }
 
@@ -176,8 +176,29 @@ public class FileServiceImpl implements FileService {
             FileMapper fileMapper = sqlSession.getMapper(FileMapper.class);
             return fileMapper.findNameById(fileId);
         } catch (Exception e) {
-            throw new RuntimeException("fail to unfreeze file");
+            throw new RuntimeException("fail to find name by id");
         }
     }
-
+    
+    @Override
+    public Files findById(Long fileId) {
+        SqlSession sqlSession = MyBatisUtil.getSession();
+        try {
+            FileMapper fileMapper = sqlSession.getMapper(FileMapper.class);
+            return fileMapper.findById(fileId.intValue());
+        } finally {
+            sqlSession.close();
+        }
+    }
+    
+    @Override
+    public List<Files> findAll() {
+        SqlSession sqlSession = MyBatisUtil.getSession();
+        try {
+            FileMapper fileMapper = sqlSession.getMapper(FileMapper.class);
+            return fileMapper.findAll();
+        } finally {
+            sqlSession.close();
+        }
+    }
 }

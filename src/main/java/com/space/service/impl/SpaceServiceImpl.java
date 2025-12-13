@@ -33,4 +33,30 @@ public class SpaceServiceImpl implements SpaceService {
             sqlSession.close();
         }
     }
+
+    @Override
+    public Long findTotalSize(Long userId) {
+        try (SqlSession sqlSession = MyBatisUtil.getSession()) {
+            SpaceMapper spaceMapper = sqlSession.getMapper(SpaceMapper.class);
+            return spaceMapper.selectSpaceTotalSize(userId);
+        } catch (Exception e) {
+            throw new RuntimeException("fail to get used size");
+        }
+    }
+
+    @Override
+    public Boolean updateTotalSize(Long userId, Long newTotalSize) {
+        SqlSession sqlSession = MyBatisUtil.getSession();
+        try{
+            SpaceMapper spaceMapper = sqlSession.getMapper(SpaceMapper.class);
+            boolean result = spaceMapper.updateTotalSize(userId, newTotalSize);
+            sqlSession.commit();
+            return result;
+        }catch (Exception e){
+            sqlSession.rollback();
+            throw new RuntimeException("fail to update total size");
+        }finally {
+            sqlSession.close();
+        }
+    }
 }
