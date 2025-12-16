@@ -52,8 +52,53 @@
             align-items: center;
         }
         
+        .file-info {
+            display: flex;
+            align-items: center;
+            flex-grow: 1;
+        }
+        
+        .file-preview {
+            width: 50px;
+            height: 50px;
+            margin-right: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #f0f0f0;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        
+        .file-preview img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: cover;
+        }
+        
+        .file-preview .file-icon {
+            font-size: 24px;
+        }
+        
+        .file-details {
+            flex-grow: 1;
+        }
+        
+        .file-name {
+            font-weight: bold;
+            display: block;
+        }
+        
+        .file-type {
+            font-size: 12px;
+            color: #666;
+        }
+        
         .file-actions {
             margin-left: 10px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
         }
         
         .file-actions .btn {
@@ -85,6 +130,40 @@
             border-radius: 5px;
             padding: 15px;
             margin: 20px 0;
+        }
+        
+        /* 媒体播放器容器 */
+        .media-player-container {
+            margin: 10px 0;
+            text-align: center;
+            background: #000;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+        
+        .media-player-container audio,
+        .media-player-container video {
+            width: 100%;
+            max-width: 100%;
+            outline: none;
+        }
+        
+        .media-player-container img {
+            max-width: 100%;
+            max-height: 400px;
+            display: block;
+            margin: 0 auto;
+        }
+        
+        /* 预览切换按钮 */
+        .toggle-preview {
+            background: none;
+            border: none;
+            color: #007bff;
+            cursor: pointer;
+            text-decoration: underline;
+            font-size: 12px;
+            padding: 2px 5px;
         }
     </style>
 </head>
@@ -150,8 +229,39 @@
                     <ul>
                         <c:forEach var="file" items="${uploadedFiles}">
                             <li>
-                                <span>${file.fileName}</span>
+                                <div class="file-info">
+                                    <div class="file-preview">
+                                        <c:choose>
+                                            <c:when test='${file.fileType == "图片"}'>
+                                                <!-- 对于图片文件，显示缩略图 -->
+                                                <span class="file-icon">🖼️</span>
+                                            </c:when>
+                                            <c:when test='${file.fileType == "文档"}'>
+                                                <span class="file-icon">📄</span>
+                                            </c:when>
+                                            <c:when test='${file.fileType == "音频"}'>
+                                                <span class="file-icon">🎵</span>
+                                            </c:when>
+                                            <c:when test='${file.fileType == "视频"}'>
+                                                <span class="file-icon">🎬</span>
+                                            </c:when>
+                                            <c:otherwise>
+                                                <span class="file-icon">📁</span>
+                                            </c:otherwise>
+                                        </c:choose>
+                                    </div>
+                                    <div class="file-details">
+                                        <span class="file-name">${file.fileName}</span>
+                                        <span class="file-type">${file.fileType}</span>
+                                    </div>
+                                </div>
                                 <span class="file-actions">
+                                    <c:if test='${file.fileType == "图片" || file.fileType == "音频" || file.fileType == "视频"}'>
+                                        <button type="button" class="toggle-preview" 
+                                                onclick="togglePreview(${file.id}, '${file.fileType}', this)">
+                                            预览
+                                        </button>
+                                    </c:if>
                                     <a href="<c:url value='/download/${file.id}'/>" class="btn secondary">下载</a>
                                     <c:choose>
                                         <c:when test="${file.status == 1}">
@@ -181,6 +291,9 @@
                                         <button type="submit" class="btn primary">更新</button>
                                     </form>
                                 </span>
+                                
+                                <!-- 媒体播放器容器（初始隐藏） -->
+                                <div id="media-container-${file.id}" class="media-player-container" style="display: none;"></div>
                             </li>
                         </c:forEach>
                     </ul>
@@ -215,6 +328,65 @@
             const fileName = e.target.files[0] ? e.target.files[0].name : '未选择文件';
             e.target.previousElementSibling.textContent = '选择文件: ' + fileName;
         });
+        
+        // 切换预览功能
+        function togglePreview(fileId, fileType, button) {
+            const container = document.getElementById("media-container-" + fileId);
+            const isVisible = container.style.display !== "none";
+            
+            // 隐藏所有媒体容器
+            const allContainers = document.querySelectorAll('[id^="media-container-"]');
+            allContainers.forEach(c => {
+                c.style.display = "none";
+            });
+            
+            // 暂停所有媒体播放
+            const allMedia = document.querySelectorAll('audio, video');
+            allMedia.forEach(media => {
+                media.pause();
+            });
+            
+            if (isVisible) {
+                // 如果当前是显示的，则隐藏
+                container.style.display = "none";
+                button.textContent = "预览";
+            } else {
+                // 如果当前是隐藏的，则显示并加载媒体
+                container.innerHTML = "";
+                
+                if (fileType === "图片") {
+                    const img = document.createElement("img");
+                    img.src = "<c:url value='/preview/'/>" + fileId;
+                    img.alt = "图片预览";
+                    container.appendChild(img);
+                } else if (fileType === "音频") {
+                    const audio = document.createElement("audio");
+                    audio.controls = true;
+                    audio.autoplay = true;
+                    
+                    const source = document.createElement("source");
+                    source.src = "<c:url value='/preview/'/>" + fileId;
+                    
+                    audio.appendChild(source);
+                    audio.innerHTML += "您的浏览器不支持音频元素。";
+                    container.appendChild(audio);
+                } else if (fileType === "视频") {
+                    const video = document.createElement("video");
+                    video.controls = true;
+                    video.autoplay = true;
+                    
+                    const source = document.createElement("source");
+                    source.src = "<c:url value='/preview/'/>" + fileId;
+                    
+                    video.appendChild(source);
+                    video.innerHTML += "您的浏览器不支持视频元素。";
+                    container.appendChild(video);
+                }
+                
+                container.style.display = "block";
+                button.textContent = "隐藏";
+            }
+        }
     </script>
 </body>
 </html>

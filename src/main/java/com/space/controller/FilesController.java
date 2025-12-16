@@ -27,6 +27,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 
@@ -36,6 +37,45 @@ public class FilesController {
 
     FileService fileService = new FileServiceImpl();
     SpaceService spaceService = new SpaceServiceImpl();
+    
+    // 定义各种文件类型的扩展名
+    private static final List<String> DOCUMENT_EXTENSIONS = Arrays.asList(
+        "txt", "pdf", "doc", "docx", "xls", "xlsx", "ppt", "pptx", "odt", "ods", "odp"
+    );
+    
+    private static final List<String> IMAGE_EXTENSIONS = Arrays.asList(
+        "jpg", "jpeg", "png", "gif", "bmp", "svg", "webp", "tiff", "ico"
+    );
+    
+    private static final List<String> AUDIO_EXTENSIONS = Arrays.asList(
+        "mp3", "wav", "ogg", "flac", "aac", "wma", "m4a"
+    );
+    
+    private static final List<String> VIDEO_EXTENSIONS = Arrays.asList(
+        "mp4", "avi", "mkv", "mov", "wmv", "flv", "webm", "m4v"
+    );
+    
+    // 根据文件扩展名判断文件类型
+    private String getFileType(String fileName) {
+        if (fileName == null || fileName.lastIndexOf('.') == -1) {
+            return "其他";
+        }
+        
+        String extension = fileName.substring(fileName.lastIndexOf('.') + 1).toLowerCase();
+        
+        if (DOCUMENT_EXTENSIONS.contains(extension)) {
+            return "文档";
+        } else if (IMAGE_EXTENSIONS.contains(extension)) {
+            return "图片";
+        } else if (AUDIO_EXTENSIONS.contains(extension)) {
+            return "音频";
+        } else if (VIDEO_EXTENSIONS.contains(extension)) {
+            return "视频";
+        } else {
+            return "其他";
+        }
+    }
+    
     //todo 文件上传下载
     @GetMapping("/upload")
     public String showUploadForm(HttpServletRequest request, Model model) {
@@ -96,10 +136,11 @@ public class FilesController {
             files.setFileName(originalFilename);
             files.setFilePath(String.valueOf(uploadDir));
             files.setFileSize(size);
-            // todo 匹配对应类型
-            files.setFileType("other");
+            // 根据文件扩展名匹配对应类型
+            files.setFileType(getFileType(originalFilename));
             files.setStatus(0);
             files.setIsTop(0); // 添加默认值，解决is_top不能为null的问题
+            files.setUploadTime(LocalDateTime.now()); // 设置上传时间
             
             // 使用Service保存文件信息到数据库
             boolean success = fileService.saveFile(files);
@@ -174,6 +215,127 @@ public class FilesController {
         
         // 写入响应
         try (FileInputStream fis = new FileInputStream(actualFile);
+             OutputStream os = response.getOutputStream()) {
+            
+            byte[] buffer = new byte[4096];
+            int bytesRead;
+            while ((bytesRead = fis.read(buffer)) != -1) {
+                os.write(buffer, 0, bytesRead);
+            }
+            os.flush();
+        }
+    }
+    
+    // 文件预览功能
+    @GetMapping("/preview/{fileId}")
+    public void preview(@PathVariable Long fileId,
+                        HttpServletRequest request,
+                        HttpServletResponse response) throws IOException {
+        // 检查用户是否登录
+        User user = (User) request.getSession().getAttribute("loginUser");
+        if (user == null) {
+            response.sendError(HttpServletResponse.SC_FORBIDDEN, "请先登录");
+            return;
+        }
+        
+        // 从数据库获取文件信息
+        SqlSession sqlSession = MyBatisUtil.getSession();
+        FileMapper fileMapper = sqlSession.getMapper(FileMapper.class);
+        Files file = fileMapper.findById(fileId.intValue());
+        sqlSession.close();
+        
+        // 检查文件是否存在
+        if (file == null) {
+            response.sendError(HttpServletResponse.SC_NOT_FOUND, "文件不存在");
+            return;
+        }
+        
+        // 检查文件是否属于当前用户
+        /*if (!file.getUserId().equals(user.getUserId())) {
+            response.sendError(HttpServletResponse.SC_FORBIDDEN, "无权访问该文件");
+            return;
+        }*/
+        
+        // 构建文件路径
+        File uploadDir = new File(file.getFilePath());
+        File actualFile = new File(uploadDir, file.getFileName());
+        
+        // 检查文件是否存在
+        if (!actualFile.exists()) {
+            response.sendError(HttpServletResponse.SC_NOT_FOUND, "文件不存在");
+            return;
+        }
+        
+        // 根据文件类型设置Content-Type并返回内容
+        if ("图片".equals(file.getFileType())) {
+            serveMediaFile(response, actualFile, file.getFileName(), "image");
+        } else if ("音频".equals(file.getFileType())) {
+            serveMediaFile(response, actualFile, file.getFileName(), "audio");
+        } else if ("视频".equals(file.getFileType())) {
+            serveMediaFile(response, actualFile, file.getFileName(), "video");
+        } else {
+            response.sendError(HttpServletResponse.SC_UNSUPPORTED_MEDIA_TYPE, "不支持预览该文件类型");
+        }
+    }
+    
+    // 为媒体文件提供服务的辅助方法
+    private void serveMediaFile(HttpServletResponse response, File file, String fileName, String mediaType) throws IOException {
+        // 设置适当的Content-Type
+        String contentType = "application/octet-stream";
+        
+        // 获取文件扩展名
+        String extension = "";
+        int lastDotIndex = fileName.lastIndexOf('.');
+        if (lastDotIndex > 0) {
+            extension = fileName.substring(lastDotIndex + 1).toLowerCase();
+        }
+        
+        switch (mediaType) {
+            case "image":
+                if ("jpg".equals(extension) || "jpeg".equals(extension)) {
+                    contentType = "image/jpeg";
+                } else if ("png".equals(extension)) {
+                    contentType = "image/png";
+                } else if ("gif".equals(extension)) {
+                    contentType = "image/gif";
+                } else {
+                    contentType = "image/" + extension;
+                }
+                break;
+            case "audio":
+                if ("mp3".equals(extension)) {
+                    contentType = "audio/mpeg";
+                } else if ("wav".equals(extension)) {
+                    contentType = "audio/wav";
+                } else if ("ogg".equals(extension)) {
+                    contentType = "audio/ogg";
+                } else {
+                    contentType = "audio/" + extension;
+                }
+                break;
+            case "video":
+                if ("mp4".equals(extension)) {
+                    contentType = "video/mp4";
+                } else if ("avi".equals(extension)) {
+                    contentType = "video/x-msvideo";
+                } else if ("mov".equals(extension)) {
+                    contentType = "video/quicktime";
+                } else {
+                    contentType = "video/" + extension;
+                }
+                break;
+        }
+        
+        System.out.println("Serving file: " + fileName + " with content type: " + contentType);
+        
+        response.setContentType(contentType);
+        response.setContentLength((int) file.length());
+        
+        // 支持范围请求（用于视频流）
+        response.setHeader("Accept-Ranges", "bytes");
+        
+        // 写入响应
+        try (FileInputStream fis = new FileInputStream(file);
              OutputStream os = response.getOutputStream()) {
             
             byte[] buffer = new byte[4096];
