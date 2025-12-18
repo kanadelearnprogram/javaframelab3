@@ -123,7 +123,12 @@ public class UserController {
         
         // 获取用户已上传的文件列表（带分页）
         List<Files> uploadedFiles = fileService.listFileWithPagination(userId, pageNum, pageSize);
+        
+        // 获取用户置顶文件列表
+        List<Files> toppedFiles = fileService.listTopFiles(userId);
+        
         model.addAttribute("uploadedFiles", uploadedFiles);
+        model.addAttribute("toppedFiles", toppedFiles);
         model.addAttribute("userId", userId);
         model.addAttribute("pageNum", pageNum);
         model.addAttribute("pageSize", pageSize);

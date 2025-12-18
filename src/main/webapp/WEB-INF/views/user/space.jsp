@@ -165,6 +165,46 @@
             font-size: 12px;
             padding: 2px 5px;
         }
+        
+        /* 置顶文件样式 */
+        .topped-files {
+            background-color: #e7f3ff;
+            border: 1px solid #bee0ff;
+            border-radius: 5px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .topped-files h3 {
+            margin-top: 0;
+            color: #0066cc;
+        }
+        
+        .topped-files ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        
+        .topped-files li {
+            padding: 8px;
+            border-bottom: 1px dashed #bee0ff;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .topped-files li:last-child {
+            border-bottom: none;
+        }
+        
+        .top-tag {
+            background-color: #ffcc00;
+            color: #000;
+            font-size: 10px;
+            padding: 2px 5px;
+            border-radius: 3px;
+            margin-left: 5px;
+        }
     </style>
 </head>
 <body>
@@ -221,6 +261,62 @@
             </form>
         </div>
         
+        <!-- 置顶文件列表 -->
+        <c:if test="${not empty toppedFiles && toppedFiles.size() > 0}">
+            <div class="topped-files">
+                <h3>置顶文件 <span class="top-tag">TOP</span></h3>
+                <ul>
+                    <c:forEach var="file" items="${toppedFiles}">
+                        <li>
+                            <div class="file-info">
+                                <div class="file-preview">
+                                    <c:choose>
+                                        <c:when test='${file.fileType == "图片"}'>
+                                            <span class="file-icon">🖼️</span>
+                                        </c:when>
+                                        <c:when test='${file.fileType == "文档"}'>
+                                            <span class="file-icon">📄</span>
+                                        </c:when>
+                                        <c:when test='${file.fileType == "音频"}'>
+                                            <span class="file-icon">🎵</span>
+                                        </c:when>
+                                        <c:when test='${file.fileType == "视频"}'>
+                                            <span class="file-icon">🎬</span>
+                                        </c:when>
+                                        <c:otherwise>
+                                            <span class="file-icon">📁</span>
+                                        </c:otherwise>
+                                    </c:choose>
+                                </div>
+                                <div class="file-details">
+                                    <span class="file-name">${file.fileName} <span class="top-tag">TOP</span></span>
+                                    <span class="file-type">${file.fileType}</span>
+                                </div>
+                            </div>
+                            <span class="file-actions">
+                                <c:if test='${file.fileType == "图片" || file.fileType == "音频" || file.fileType == "视频"}'>
+                                    <button type="button" class="toggle-preview" 
+                                            onclick="togglePreview(${file.id}, '${file.fileType}', this)">
+                                        预览
+                                    </button>
+                                </c:if>
+                                <a href="<c:url value='/download/${file.id}'/>" class="btn secondary">下载</a>
+                                
+                                <!-- 取消置顶按钮 -->
+                                <form action="<c:url value='/calpintop'/>" method="post" style="display: inline;" onsubmit="return confirm('确定要取消置顶这个文件吗？')">
+                                    <input type="hidden" name="fileId" value="${file.id}">
+                                    <button type="submit" class="btn warning">取消置顶</button>
+                                </form>
+                            </span>
+                            
+                            <!-- 媒体播放器容器（初始隐藏） -->
+                            <div id="media-container-${file.id}" class="media-player-container" style="display: none;"></div>
+                        </li>
+                    </c:forEach>
+                </ul>
+            </div>
+        </c:if>
+        
         <!-- 已上传文件列表 -->
         <div class="uploaded-files">
             <h3>已上传文件</h3>
@@ -251,7 +347,11 @@
                                         </c:choose>
                                     </div>
                                     <div class="file-details">
-                                        <span class="file-name">${file.fileName}</span>
+                                        <span class="file-name">${file.fileName}
+                                            <c:if test="${file.isTop == 1}">
+                                                <span class="top-tag">TOP</span>
+                                            </c:if>
+                                        </span>
                                         <span class="file-type">${file.fileType}</span>
                                     </div>
                                 </div>
@@ -263,6 +363,7 @@
                                         </button>
                                     </c:if>
                                     <a href="<c:url value='/download/${file.id}'/>" class="btn secondary">下载</a>
+                                    
                                     <c:choose>
                                         <c:when test="${file.status == 1}">
                                             <form action="<c:url value='/unfreeze'/>" method="post" style="display: inline;">
@@ -283,6 +384,22 @@
                                         <input type="hidden" name="fileId" value="${file.id}">
                                         <button type="submit" class="btn danger">删除</button>
                                     </form>
+                                    
+                                    <!-- 置顶/取消置顶按钮 -->
+                                    <c:choose>
+                                        <c:when test="${file.isTop == 1}">
+                                            <form action="<c:url value='/calpintop'/>" method="post" style="display: inline;" onsubmit="return confirm('确定要取消置顶这个文件吗？')">
+                                                <input type="hidden" name="fileId" value="${file.id}">
+                                                <button type="submit" class="btn warning">取消置顶</button>
+                                            </form>
+                                        </c:when>
+                                        <c:otherwise>
+                                            <form action="<c:url value='/pintop'/>" method="post" style="display: inline;" onsubmit="return confirm('确定要置顶这个文件吗？')">
+                                                <input type="hidden" name="fileId" value="${file.id}">
+                                                <button type="submit" class="btn primary">置顶</button>
+                                            </form>
+                                        </c:otherwise>
+                                    </c:choose>
                                     
                                     <!-- 更新按钮 -->
                                     <form action="<c:url value='/update'/>" method="post" enctype="multipart/form-data" style="display: inline;">

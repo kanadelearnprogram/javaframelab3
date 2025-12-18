@@ -8,6 +8,24 @@
     <meta charset="UTF-8">
     <title>云存空间 - 用户首页</title>
     <link rel="stylesheet" type="text/css" href="<c:url value='/static/css/style.css'/>">
+    <style>
+        .top-files-section {
+            background-color: #fff8e1;
+            border: 1px solid #ffecb3;
+            border-radius: 5px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .top-tag {
+            background-color: #ffcc00;
+            color: #000;
+            font-size: 10px;
+            padding: 2px 5px;
+            border-radius: 3px;
+            margin-left: 5px;
+        }
+    </style>
 </head>
 <body>
     <div class="container">
@@ -40,6 +58,20 @@
             </c:if>
         </section>
 
+        <!-- 显示置顶文件 -->
+        <c:if test="${not empty topFiles && topFiles.size() > 0}">
+            <section class="top-files-section">
+                <h3>置顶文件 <span class="top-tag">TOP</span></h3>
+                <c:forEach var="file" items="${topFiles}">
+                    <div>
+                        <span>${file.fileName}</span>
+                        <span class="top-tag">TOP</span>
+                        <a href="<c:url value='/download/${file.id}'/>" class="btn secondary" style="float: right;">下载</a>
+                    </div>
+                </c:forEach>
+            </section>
+        </c:if>
+
         <!-- 显示所有文件 -->
 <%--        todo 文件大小MB--%>
         <section class="files-section">
@@ -68,7 +100,12 @@
                             <c:forEach var="file" items="${allFiles}">
                                 <tr>
                                     <td>${ownerMap[file.userId]}</td>
-                                    <td>${file.fileName}</td>
+                                    <td>
+                                        ${file.fileName}
+                                        <c:if test="${file.isTop == 1}">
+                                            <span class="top-tag">TOP</span>
+                                        </c:if>
+                                    </td>
                                     <td>
                                         <fmt:formatNumber value="${file.fileSize/1024}" maxFractionDigits="0"/>KB
                                     </td>

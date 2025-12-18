@@ -201,4 +201,58 @@ public class FileServiceImpl implements FileService {
             sqlSession.close();
         }
     }
+
+    @Override
+    public Boolean pinTop(Long fileId, Integer state) {
+        SqlSession sqlSession = MyBatisUtil.getSession();
+        try{
+            FileMapper fileMapper = sqlSession.getMapper(FileMapper.class);
+            boolean result = fileMapper.pinTop(fileId,state);
+            sqlSession.commit();
+            return result;
+        }catch (Exception e){
+            sqlSession.rollback();
+            throw new RuntimeException("fail to delete file");
+        }finally {
+            sqlSession.close();
+        }
+    }
+
+    @Override
+    public Boolean calPinTop(Long fileId) {
+        SqlSession sqlSession = MyBatisUtil.getSession();
+        try{
+            FileMapper fileMapper = sqlSession.getMapper(FileMapper.class);
+            boolean result = fileMapper.calPinTop(fileId);
+            sqlSession.commit();
+            return result;
+        }catch (Exception e){
+            sqlSession.rollback();
+            throw new RuntimeException("fail to delete file");
+        }finally {
+            sqlSession.close();
+        }
+    }
+
+    @Override
+    public List<Files> listTopFiles(Long userId) {
+        SqlSession sqlSession = MyBatisUtil.getSession();
+        try {
+            FileMapper fileMapper = sqlSession.getMapper(FileMapper.class);
+            return fileMapper.findTopFiles(userId);
+        } finally {
+            sqlSession.close();
+        }
+    }
+
+    @Override
+    public List<Files> listTopFilesAdmin(Long userId) {
+        SqlSession sqlSession = MyBatisUtil.getSession();
+        try {
+            FileMapper fileMapper = sqlSession.getMapper(FileMapper.class);
+            return fileMapper.findTopFilesByAdmin(userId);
+        } finally {
+            sqlSession.close();
+        }
+    }
 }

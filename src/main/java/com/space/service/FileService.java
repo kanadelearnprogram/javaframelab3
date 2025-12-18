@@ -20,4 +20,10 @@ public interface FileService {
     // 新增的方法
     Files findById(Long fileId);
     List<Files> findAll();
+    Boolean pinTop(Long filedId,Integer state);
+    Boolean calPinTop(Long filedId);
+
+    List<Files> listTopFiles(Long userId);
+
+    List<Files> listTopFilesAdmin(Long userId);
 }

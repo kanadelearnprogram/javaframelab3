@@ -164,4 +164,40 @@ public interface FileMapper {
     // 按下载量排序
     List<Files> findHotFiles();
 
+    @Update("update t_file set is_top = #{isTop} where file_id = #{fileId}")
+    boolean pinTop(@Param("fileId") Long fileId,@Param("isTop")Integer isTop);
+
+    @Update("update t_file set is_top = 0 where file_id = #{fileId}")
+    boolean calPinTop(@Param("fileId") Long fileId);
+
+    //
+    @Select("SELECT file_id, user_id, file_name, file_path, file_size, file_type, upload_time, status, download_count " +
+            "FROM t_file WHERE user_id = #{userId} and is_top >0 ") //normal
+    @Results({
+            @Result(property = "id", column = "file_id"),
+            @Result(property = "userId", column = "user_id"),
+            @Result(property = "fileName", column = "file_name"),
+            @Result(property = "filePath", column = "file_path"),
+            @Result(property = "fileSize", column = "file_size"),
+            @Result(property = "fileType", column = "file_type"),
+            @Result(property = "uploadTime", column = "upload_time"),
+            @Result(property = "status", column = "status"),
+            @Result(property = "downloadCount", column = "download_count")
+    })
+    List<Files> findTopFiles(@Param("userId")Long userId);
+
+    @Select("SELECT file_id, user_id, file_name, file_path, file_size, file_type, upload_time, status, download_count " +
+            "FROM t_file WHERE user_id = #{userId} and is_top = 2") //normal
+    @Results({
+            @Result(property = "id", column = "file_id"),
+            @Result(property = "userId", column = "user_id"),
+            @Result(property = "fileName", column = "file_name"),
+            @Result(property = "filePath", column = "file_path"),
+            @Result(property = "fileSize", column = "file_size"),
+            @Result(property = "fileType", column = "file_type"),
+            @Result(property = "uploadTime", column = "upload_time"),
+            @Result(property = "status", column = "status"),
+            @Result(property = "downloadCount", column = "download_count")
+    })
+    List<Files> findTopFilesByAdmin(Long userId);
 }

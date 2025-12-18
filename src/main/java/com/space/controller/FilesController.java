@@ -76,7 +76,7 @@ public class FilesController {
         }
     }
     
-    //todo 文件上传下载
+    // 文件上传下载
     @GetMapping("/upload")
     public String showUploadForm(HttpServletRequest request, Model model) {
         User user = (User) request.getSession().getAttribute("loginUser");
@@ -424,4 +424,32 @@ public class FilesController {
         // todo 添加完整
         return "redirect:/user/size";
     }
+
+    // 文件置顶
+    @PostMapping("/pintop")
+    public String pinTop(HttpServletRequest request, Long fileId, Model model){
+        User user = (User) request.getSession().getAttribute("loginUser");
+        if (user == null) {
+            return "redirect:/user/login";
+        }
+        if (user.getRole().equals("admin")){
+            Boolean b = fileService.pinTop(fileId,2);
+        } else {
+            Boolean b = fileService.pinTop(fileId,1);
+        }
+
+        return "redirect:/user/size";
+    }
+    // 取消置顶
+    @PostMapping("/calpintop")
+    public String calPinTop(HttpServletRequest request, Long fileId, Model model){
+        User user = (User) request.getSession().getAttribute("loginUser");
+        if (user == null) {
+            return "redirect:/user/login";
+        }
+        fileService.calPinTop(fileId);
+        return "redirect:/user/size";
+    }
+
+
 }

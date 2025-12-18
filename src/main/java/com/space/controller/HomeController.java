@@ -4,6 +4,8 @@ import com.space.mapper.FileMapper;
 import com.space.mapper.UserMapper;
 import com.space.model.entity.Files;
 import com.space.model.entity.User;
+import com.space.service.FileService;
+import com.space.service.impl.FileServiceImpl;
 import com.space.util.MyBatisUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import org.apache.ibatis.session.SqlSession;
@@ -18,6 +20,8 @@ import java.util.Map;
 
 @Controller
 public class HomeController {
+
+    FileService fileService = new FileServiceImpl();
 
     // 网站首页路由（JSTL 渲染文件列表的核心请求）
     @GetMapping("/")
@@ -93,6 +97,9 @@ public class HomeController {
                 allFiles = fileMapper.findAll(); // 默认排序
             }
 
+            // 获取置顶文件
+            List<Files> topFiles = fileService.listTopFilesAdmin(loginUser.getUserId());
+
             // 2.2 构建 ownerMap（文件所有者ID -> 昵称）
             UserMapper userMapper = sqlSession.getMapper(UserMapper.class);
             Map<Long, String> ownerMap = new HashMap<>();
@@ -103,6 +110,7 @@ public class HomeController {
 
             // 2.3 把数据传入 Model（供 home.jsp 的 JSTL 渲染）
             model.addAttribute("allFiles", allFiles);
+            model.addAttribute("topFiles", topFiles);
             model.addAttribute("ownerMap", ownerMap);
 
         } finally {
@@ -111,4 +119,17 @@ public class HomeController {
 
         return "home"; // 对应 home.jsp，此时能拿到 allFiles/ownerMap
     }
+    
+    // 列出置顶文件
+ /*   @GetMapping("/listTop")
+    public String listTopFiles(HttpServletRequest request, Model model){
+        User loginUser = (User) request.getSession().getAttribute("loginUser");
+        if (loginUser == null) {
+            return "redirect:/user/login"; // 未登录跳登录
+        }
+        List<Files> topFiles = fileService.listTopFiles(loginUser.getUserId());
+        System.out.println("\n\n\n"+topFiles);
+        model.addAttribute("topFiles",topFiles);
+        return "home";
+    }*/
 }
