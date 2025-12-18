@@ -44,6 +44,12 @@
 <%--        todo 文件大小MB--%>
         <section class="files-section">
             <h3>所有文件</h3>
+            <c:if test="${not empty allFiles}">
+                <div style="margin-bottom: 10px;">
+                    <a href="<c:url value='/home?sort=download'/>">按下载量排序</a> | 
+                    <a href="<c:url value='/home'/>">默认排序</a>
+                </div>
+            </c:if>
             <c:choose>
                 <c:when test="${not empty allFiles}">
                     <table class="files-table">
@@ -57,6 +63,7 @@
                                 <th>操作</th>
                             </tr>
                         </thead>
+<%--                        todo 添加置顶文件块--%>
                         <tbody>
                             <c:forEach var="file" items="${allFiles}">
                                 <tr>

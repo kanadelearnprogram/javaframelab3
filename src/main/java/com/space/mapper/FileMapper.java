@@ -96,6 +96,25 @@ public interface FileMapper {
     List<Files> findAll();
     
     /**
+     * 查找所有文件并按下载量排序
+     * @return 文件列表
+     */
+    @Select("SELECT file_id, user_id, file_name, file_path, file_size, file_type, upload_time, status, download_count " +
+            "FROM t_file where is_delete = 0 and status =0 ORDER BY download_count DESC")
+    @Results({
+        @Result(property = "id", column = "file_id"),
+        @Result(property = "userId", column = "user_id"),
+        @Result(property = "fileName", column = "file_name"),
+        @Result(property = "filePath", column = "file_path"),
+        @Result(property = "fileSize", column = "file_size"),
+        @Result(property = "fileType", column = "file_type"),
+        @Result(property = "uploadTime", column = "upload_time"),
+        @Result(property = "status", column = "status"),
+        @Result(property = "downloadCount", column = "download_count")
+    })
+    List<Files> findAllOrderByDownloadCountDesc();
+    
+    /**
      * 增加文件下载次数
      * @param fileId 文件ID
      * @return 更新是否成功
@@ -128,4 +147,21 @@ public interface FileMapper {
 
     @Select("select file_name from t_file where file_id = #{fileId}")
     String findNameById(Long fileId);
+
+    @Select("SELECT file_id, user_id, file_name, file_path, file_size, file_type, upload_time, status, download_count " +
+            "FROM t_file where is_delete = 0 and status =0 order by download_count desc ")
+    @Results({
+            @Result(property = "id", column = "file_id"),
+            @Result(property = "userId", column = "user_id"),
+            @Result(property = "fileName", column = "file_name"),
+            @Result(property = "filePath", column = "file_path"),
+            @Result(property = "fileSize", column = "file_size"),
+            @Result(property = "fileType", column = "file_type"),
+            @Result(property = "uploadTime", column = "upload_time"),
+            @Result(property = "status", column = "status"),
+            @Result(property = "downloadCount", column = "download_count")
+    })
+    // 按下载量排序
+    List<Files> findHotFiles();
+
 }

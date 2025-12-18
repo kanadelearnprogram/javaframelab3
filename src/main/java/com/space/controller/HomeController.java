@@ -10,6 +10,7 @@ import org.apache.ibatis.session.SqlSession;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.HashMap;
 import java.util.List;
@@ -20,7 +21,8 @@ public class HomeController {
 
     // 网站首页路由（JSTL 渲染文件列表的核心请求）
     @GetMapping("/")
-    public String index(HttpServletRequest request, Model model) {
+    public String index(@RequestParam(value = "sort", required = false) String sort,
+                        HttpServletRequest request, Model model) {
         // 1. 获取登录用户（传给前端显示）
         User loginUser = (User) request.getSession().getAttribute("loginUser");
         model.addAttribute("loginUser", loginUser);
@@ -30,7 +32,14 @@ public class HomeController {
         try {
             sqlSession = MyBatisUtil.getSession();
             FileMapper fileMapper = sqlSession.getMapper(FileMapper.class);
-            List<Files> allFiles = fileMapper.findAll(); // 确保该方法返回所有文件
+            
+            // 根据sort参数决定使用哪种排序方式
+            List<Files> allFiles;
+            if ("download".equals(sort)) {
+                allFiles = fileMapper.findAllOrderByDownloadCountDesc(); // 按下载量排序
+            } else {
+                allFiles = fileMapper.findAll(); // 默认排序
+            }
 
             // 3. 构建「文件所有者ID -> 昵称」的Map（解决前端ownerMap为空的问题）
             UserMapper userMapper = sqlSession.getMapper(UserMapper.class);
@@ -59,7 +68,8 @@ public class HomeController {
 
     // 用户首页路由
     @GetMapping("/home")
-    public String home(HttpServletRequest request, Model model) {
+    public String home(@RequestParam(value = "sort", required = false) String sort,
+                       HttpServletRequest request, Model model) {
         // 1. 校验登录状态
         User loginUser = (User) request.getSession().getAttribute("loginUser");
         if (loginUser == null) {
@@ -74,9 +84,14 @@ public class HomeController {
             sqlSession = MyBatisUtil.getSession();
             // 2.1 查询当前登录用户的文件列表（也可查所有文件，按需调整）
             FileMapper fileMapper = sqlSession.getMapper(FileMapper.class);
-            // 若要查“当前用户的文件”：List<Files> allFiles = fileMapper.listFilesByUserId(loginUser.getUserId());
-            // 若要查“所有文件”：List<Files> allFiles = fileMapper.findAll();
-            List<Files> allFiles = fileMapper.findAll(); // 按需选择查询范围
+            
+            // 根据sort参数决定使用哪种排序方式
+            List<Files> allFiles;
+            if ("download".equals(sort)) {
+                allFiles = fileMapper.findAllOrderByDownloadCountDesc(); // 按下载量排序
+            } else {
+                allFiles = fileMapper.findAll(); // 默认排序
+            }
 
             // 2.2 构建 ownerMap（文件所有者ID -> 昵称）
             UserMapper userMapper = sqlSession.getMapper(UserMapper.class);

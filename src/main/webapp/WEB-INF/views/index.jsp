@@ -1,5 +1,6 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 <!DOCTYPE html>
 <html>
 <head>
@@ -38,6 +39,12 @@
     <!-- JSTL 渲染所有文件列表（核心修复） -->
     <section class="files-section">
         <h3>所有文件</h3>
+        <c:if test="${not empty allFiles}">
+            <div style="margin-bottom: 10px;">
+                <a href="<c:url value='/?sort=download'/>">按下载量排序</a> | 
+                <a href="<c:url value='/'/>">默认排序</a>
+            </div>
+        </c:if>
         <!-- 有文件时渲染表格 -->
         <c:if test="${not empty allFiles}">
             <table class="files-table">
@@ -59,7 +66,7 @@
                         <td>${file.fileName}</td>
                         <td>${file.downloadCount}</td>
                         <!-- 注意：字段名需和Files实体类一致！若实体类是uploadTime则改为${file.uploadTime} -->
-                        <td>${file.updateTime}</td>
+                        <td>${fn:substring(file.uploadTime, 0, 10)}</td>
                     </tr>
                 </c:forEach>
                 </tbody>
