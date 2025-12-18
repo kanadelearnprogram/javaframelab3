@@ -271,4 +271,66 @@ public class FileServiceImpl implements FileService {
             sqlSession.close();
         }
     }
+    
+    @Override
+    public List<Files> listPendingFiles() {
+        SqlSession sqlSession = MyBatisUtil.getSession();
+        try {
+            FileMapper fileMapper = sqlSession.getMapper(FileMapper.class);
+            return fileMapper.findPendingFiles();
+        } finally {
+            sqlSession.close();
+        }
+    }
+    
+    @Override
+    public boolean approveFile(Long fileId, Long adminId) {
+        SqlSession sqlSession = MyBatisUtil.getSession();
+        try {
+            FileMapper fileMapper = sqlSession.getMapper(FileMapper.class);
+            // 更新文件状态为已审核
+            boolean result = fileMapper.approveFile(fileId);
+            
+            if (result) {
+                // 记录审核日志
+                fileMapper.insertAuditRecord(fileId, "file", adminId, "通过", "审核通过");
+                sqlSession.commit();
+            } else {
+                sqlSession.rollback();
+            }
+            
+            return result;
+        } catch (Exception e) {
+            sqlSession.rollback();
+            throw new RuntimeException("文件审核失败：" + e.getMessage());
+        } finally {
+            sqlSession.close();
+        }
+    }
+    
+    @Override
+    public boolean rejectFile(Long fileId, Long adminId, String reason) {
+        SqlSession sqlSession = MyBatisUtil.getSession();
+        try {
+            FileMapper fileMapper = sqlSession.getMapper(FileMapper.class);
+            // 更新文件状态为已驳回
+            boolean result = fileMapper.rejectFile(fileId);
+            
+            if (result) {
+                // 记录审核日志
+                String auditReason = (reason != null && !reason.isEmpty()) ? reason : "审核驳回";
+                fileMapper.insertAuditRecord(fileId, "file", adminId, "驳回", auditReason);
+                sqlSession.commit();
+            } else {
+                sqlSession.rollback();
+            }
+            
+            return result;
+        } catch (Exception e) {
+            sqlSession.rollback();
+            throw new RuntimeException("文件驳回失败：" + e.getMessage());
+        } finally {
+            sqlSession.close();
+        }
+    }
 }

@@ -28,4 +28,9 @@ public interface FileService {
     List<Files> listTopFilesAdmin(Long userId);
 
     List<String> listImg(Long userId);
+    
+    // 管理员审核相关方法
+    List<Files> listPendingFiles();
+    boolean approveFile(Long fileId, Long adminId);
+    boolean rejectFile(Long fileId, Long adminId, String reason);
 }

@@ -40,6 +40,9 @@
                 <c:if test="${not empty loginUser}">
                     <span>欢迎，${loginUser.nickname}!</span>
                     <a href="<c:url value='/user/logout'/>">退出</a>
+                    <c:if test="${loginUser.role eq 'admin'}">
+                        <a href="<c:url value='/admin/dashboard'/>">管理员面板</a>
+                    </c:if>
                 </c:if>
             </nav>
         </header>
