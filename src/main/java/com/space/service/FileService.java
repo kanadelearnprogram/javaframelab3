@@ -26,4 +26,6 @@ public interface FileService {
     List<Files> listTopFiles(Long userId);
 
     List<Files> listTopFilesAdmin(Long userId);
+
+    List<String> listImg(Long userId);
 }

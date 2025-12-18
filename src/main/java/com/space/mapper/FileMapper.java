@@ -1,5 +1,6 @@
 package com.space.mapper;
 
+import com.space.model.Paths;
 import com.space.model.entity.Files;
 import org.apache.ibatis.annotations.*;
 
@@ -200,4 +201,13 @@ public interface FileMapper {
             @Result(property = "downloadCount", column = "download_count")
     })
     List<Files> findTopFilesByAdmin(Long userId);
+
+    @Select("SELECT file_id, file_name, file_path " +
+            "FROM t_file where user_id = #{userId} and is_delete = 0 and status = 0 and file_type = '图片' ")
+    @Results({
+            @Result(property = "id", column = "file_id"),
+            @Result(property = "fileName", column = "file_name"),
+            @Result(property = "filePath", column = "file_path"),
+    })
+    List<Paths> findAllImgPath(@Param("userId") Long userId);
 }

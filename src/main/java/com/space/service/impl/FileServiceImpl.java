@@ -2,6 +2,7 @@ package com.space.service.impl;
 
 import com.space.mapper.FileMapper;
 import com.space.mapper.SpaceMapper;
+import com.space.model.Paths;
 import com.space.model.entity.Files;
 import com.space.service.FileService;
 import com.space.util.MyBatisUtil;
@@ -251,6 +252,21 @@ public class FileServiceImpl implements FileService {
         try {
             FileMapper fileMapper = sqlSession.getMapper(FileMapper.class);
             return fileMapper.findTopFilesByAdmin(userId);
+        } finally {
+            sqlSession.close();
+        }
+    }
+
+    @Override
+    public List<String> listImg(Long userId) {
+        SqlSession sqlSession = MyBatisUtil.getSession();
+        try {
+            FileMapper fileMapper = sqlSession.getMapper(FileMapper.class);
+            List<Paths> allImgPath = fileMapper.findAllImgPath(userId);
+            List<String> list = allImgPath.stream()
+                    .map(paths -> String.valueOf(paths.getId()))
+                    .toList();
+            return list;
         } finally {
             sqlSession.close();
         }

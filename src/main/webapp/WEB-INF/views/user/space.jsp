@@ -153,6 +153,7 @@
             max-height: 400px;
             display: block;
             margin: 0 auto;
+            object-fit: contain;
         }
         
         /* 预览切换按钮 */
@@ -205,6 +206,79 @@
             border-radius: 3px;
             margin-left: 5px;
         }
+        
+        /* 图片轮播样式 */
+        .slideshow-container {
+            position: relative;
+            max-width: 100%;
+            margin: 20px auto;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+        
+        .slideshow-slide {
+            display: none;
+        }
+        
+        .slideshow-slide.active {
+            display: block;
+        }
+        
+        .slideshow-img {
+            width: 100%;
+            max-width: 800px;
+            height: 300px;
+            object-fit: contain;
+            margin: 0 auto;
+            display: block;
+        }
+        
+        .prev, .next {
+            cursor: pointer;
+            position: absolute;
+            top: 50%;
+            width: auto;
+            padding: 16px;
+            margin-top: -22px;
+            color: white;
+            font-weight: bold;
+            font-size: 18px;
+            transition: 0.6s ease;
+            border-radius: 0 3px 3px 0;
+            user-select: none;
+            background-color: rgba(0,0,0,0.3);
+        }
+        
+        .next {
+            right: 0;
+            border-radius: 3px 0 0 3px;
+        }
+        
+        .prev:hover, .next:hover {
+            background-color: rgba(0,0,0,0.8);
+        }
+        
+        .slide-indicators {
+            text-align: center;
+            padding: 10px;
+            background-color: #f8f9fa;
+        }
+        
+        .indicator-dot {
+            cursor: pointer;
+            height: 15px;
+            width: 15px;
+            margin: 0 2px;
+            background-color: #bbb;
+            border-radius: 50%;
+            display: inline-block;
+            transition: background-color 0.6s ease;
+        }
+        
+        .indicator-dot.active {
+            background-color: #007bff;
+        }
     </style>
 </head>
 <body>
@@ -248,6 +322,26 @@
                 <button type="submit" class="btn primary" onclick="return confirm('确定要申请扩容100MB空间吗？')">申请扩容</button>
             </form>
         </div>
+        
+        <!-- 图片轮播 -->
+        <c:if test="${not empty imgPathList && imgPathList.size() > 0}">
+            <div class="slideshow-container">
+                <c:forEach var="imgId" items="${imgPathList}" varStatus="loop">
+                    <div class="slideshow-slide ${loop.index == 0 ? 'active' : ''}">
+                        <img src="<c:url value="/preview/${imgId}"/>" class="slideshow-img" alt="图片预览" onerror="this.style.display='none';">
+                    </div>
+                </c:forEach>
+                
+                <a class="prev" onclick="plusSlides(-1)">❮</a>
+                <a class="next" onclick="plusSlides(1)">❯</a>
+            </div>
+            
+            <div class="slide-indicators">
+                <c:forEach var="imgId" items="${imgPathList}" varStatus="loop">
+                    <span class="indicator-dot ${loop.index == 0 ? 'active' : ''}" onclick="currentSlide(${loop.index + 1})"></span>
+                </c:forEach>
+            </div>
+        </c:if>
         
         <!-- 文件上传表单 -->
         <div class="upload-section">
@@ -502,6 +596,45 @@
                 
                 container.style.display = "block";
                 button.textContent = "隐藏";
+            }
+        }
+        
+        // 图片轮播功能
+        let slideIndex = 1;
+        showSlides(slideIndex);
+        
+        // 自动切换图片，每秒切换一次
+        let slideInterval = setInterval(() => {
+            plusSlides(1);
+        }, 1000);
+        
+        function plusSlides(n) {
+            showSlides(slideIndex += n);
+        }
+        
+        function currentSlide(n) {
+            showSlides(slideIndex = n);
+        }
+        
+        function showSlides(n) {
+            let i;
+            let slides = document.getElementsByClassName("slideshow-slide");
+            let dots = document.getElementsByClassName("indicator-dot");
+            
+            if (n > slides.length) {slideIndex = 1}
+            if (n < 1) {slideIndex = slides.length}
+            
+            for (i = 0; i < slides.length; i++) {
+                slides[i].style.display = "none";
+            }
+            
+            for (i = 0; i < dots.length; i++) {
+                dots[i].className = dots[i].className.replace(" active", "");
+            }
+            
+            if (slides.length > 0) {
+                slides[slideIndex-1].style.display = "block";
+                dots[slideIndex-1].className += " active";
             }
         }
     </script>

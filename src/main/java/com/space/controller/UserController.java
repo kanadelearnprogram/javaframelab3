@@ -127,8 +127,12 @@ public class UserController {
         // 获取用户置顶文件列表
         List<Files> toppedFiles = fileService.listTopFiles(userId);
         
+        // 获取用户图片列表用于轮播
+        List<String> imgPathList = fileService.listImg(userId);
+        
         model.addAttribute("uploadedFiles", uploadedFiles);
         model.addAttribute("toppedFiles", toppedFiles);
+        model.addAttribute("imgPathList", imgPathList);
         model.addAttribute("userId", userId);
         model.addAttribute("pageNum", pageNum);
         model.addAttribute("pageSize", pageSize);
