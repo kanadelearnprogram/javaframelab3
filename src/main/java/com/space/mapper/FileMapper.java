@@ -1,6 +1,7 @@
 package com.space.mapper;
 
 import com.space.model.Paths;
+import com.space.model.entity.AuditRecord;
 import com.space.model.entity.Files;
 import org.apache.ibatis.annotations.*;
 
@@ -212,25 +213,6 @@ public interface FileMapper {
     List<Paths> findAllImgPath(@Param("userId") Long userId);
     
     /**
-     * 查找待审核的文件
-     * @return 文件列表
-     */
-    @Select("SELECT file_id, user_id, file_name, file_path, file_size, file_type, upload_time, status, download_count " +
-            "FROM t_file WHERE review = 0 and is_delete = 0")
-    @Results({
-        @Result(property = "id", column = "file_id"),
-        @Result(property = "userId", column = "user_id"),
-        @Result(property = "fileName", column = "file_name"),
-        @Result(property = "filePath", column = "file_path"),
-        @Result(property = "fileSize", column = "file_size"),
-        @Result(property = "fileType", column = "file_type"),
-        @Result(property = "uploadTime", column = "upload_time"),
-        @Result(property = "status", column = "status"),
-        @Result(property = "downloadCount", column = "download_count")
-    })
-    List<Files> findPendingFiles();
-    
-    /**
      * 审核通过文件
      * @param fileId 文件ID
      * @return 更新是否成功
@@ -246,20 +228,31 @@ public interface FileMapper {
     @Update("UPDATE t_file SET review = 2 WHERE file_id = #{fileId}")
     boolean rejectFile(@Param("fileId") Long fileId);
     
+    @Insert("INSERT INTO t_audit_record(related_id, related_type, audit_user_id, audit_result, audit_reason, audit_time, create_time) " +
+            "VALUES(#{relatedId}, #{relatedType}, #{auditUserId}, #{auditResult}, #{auditReason}, #{auditTime}, #{createTime})")
+    @Options(useGeneratedKeys = true, keyProperty = "auditId", keyColumn = "audit_id")
+    boolean insertAuditRecord(AuditRecord auditRecord);
+                              
+    @Select("SELECT LAST_INSERT_ID()")
+    Long getLastInsertId();
+    
     /**
-     * 插入审核记录
-     * @param relatedId 关联ID
-     * @param relatedType 关联类型
-     * @param auditUserId 审核人ID
-     * @param auditResult 审核结果
-     * @param auditReason 审核原因
-     * @return 插入是否成功
+     * 查找待审核的文件
+     * @return 文件列表
      */
-    @Insert("INSERT INTO t_audit_record(related_id, related_type, audit_user_id, audit_result, audit_reason) " +
-            "VALUES(#{relatedId}, #{relatedType}, #{auditUserId}, #{auditResult}, #{auditReason})")
-    boolean insertAuditRecord(@Param("relatedId") Long relatedId, 
-                              @Param("relatedType") String relatedType, 
-                              @Param("auditUserId") Long auditUserId, 
-                              @Param("auditResult") String auditResult, 
-                              @Param("auditReason") String auditReason);
+    @Select("SELECT file_id, user_id, file_name, file_path, file_size, file_type, upload_time, status, download_count, review " +
+            "FROM t_file WHERE review = 0 and is_delete = 0")
+    @Results({
+        @Result(property = "id", column = "file_id"),
+        @Result(property = "userId", column = "user_id"),
+        @Result(property = "fileName", column = "file_name"),
+        @Result(property = "filePath", column = "file_path"),
+        @Result(property = "fileSize", column = "file_size"),
+        @Result(property = "fileType", column = "file_type"),
+        @Result(property = "uploadTime", column = "upload_time"),
+        @Result(property = "status", column = "status"),
+        @Result(property = "downloadCount", column = "download_count"),
+        @Result(property = "review", column = "review")
+    })
+    List<Files> findPendingFiles();
 }

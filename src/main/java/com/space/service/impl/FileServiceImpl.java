@@ -292,8 +292,6 @@ public class FileServiceImpl implements FileService {
             boolean result = fileMapper.approveFile(fileId);
             
             if (result) {
-                // 记录审核日志
-                fileMapper.insertAuditRecord(fileId, "file", adminId, "通过", "审核通过");
                 sqlSession.commit();
             } else {
                 sqlSession.rollback();
@@ -317,9 +315,6 @@ public class FileServiceImpl implements FileService {
             boolean result = fileMapper.rejectFile(fileId);
             
             if (result) {
-                // 记录审核日志
-                String auditReason = (reason != null && !reason.isEmpty()) ? reason : "审核驳回";
-                fileMapper.insertAuditRecord(fileId, "file", adminId, "驳回", auditReason);
                 sqlSession.commit();
             } else {
                 sqlSession.rollback();

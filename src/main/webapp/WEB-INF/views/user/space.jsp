@@ -316,6 +316,31 @@
         
         <!-- 空间扩容申请 -->
         <div class="expand-space-form">
+            <h3>空间扩容申请</h3>
+            <p>请输入要申请的扩容大小</p>
+            <form action="<c:url value='/user/apply-expansion'/>" method="post">
+                <div class="form-group">
+                    <label for="expansionSize">扩容大小 (MB):</label>
+                    <input type="number" id="expansionSize" name="expansionSize" min="10" max="1024" step="10" required>
+                </div>
+                <button type="submit" class="btn primary" onclick="return confirm('确定要申请扩容空间吗？')">申请扩容</button>
+            </form>
+            
+            <!-- 显示当前申请状态 -->
+            <c:if test="${not empty space && not empty space.applyStatus && space.applyStatus != '未申请'}">
+                <div class="application-status">
+                    <h4>当前申请状态</h4>
+                    <p>申请容量: <fmt:formatNumber value="${space.applySize / (1024*1024)}" maxFractionDigits="0"/> MB</p>
+                    <p>申请状态: ${space.applyStatus}</p>
+                    <c:if test="${not empty space.applyTime}">
+                        <p>申请时间: ${space.applyTime}</p>
+                    </c:if>
+                </div>
+            </c:if>
+        </div>
+        
+        <!-- 空间扩容 -->
+        <div class="expand-space-form">
             <h3>空间扩容</h3>
             <p>每次扩容增加100MB空间</p>
             <form action="<c:url value='/user/addsize'/>" method="post">

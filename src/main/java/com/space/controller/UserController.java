@@ -1,5 +1,6 @@
 package com.space.controller;
 
+import com.space.model.entity.Space;
 import com.space.model.entity.User;
 import com.space.service.SpaceService;
 import com.space.service.UserService;
@@ -121,6 +122,9 @@ public class UserController {
         Long totalSize = spaceService.findTotalSize(userId);
         double usedSizePercent = totalSize > 0 ? (usedSize * 100.0) / totalSize : 0;
         
+        // 获取用户空间详细信息（包含申请状态）
+        Space space = spaceService.findByUserId(userId);
+        
         // 获取用户已上传的文件列表（带分页）
         List<Files> uploadedFiles = fileService.listFileWithPagination(userId, pageNum, pageSize);
         
@@ -139,6 +143,7 @@ public class UserController {
         model.addAttribute("usedSize", usedSize);
         model.addAttribute("totalSize", totalSize);
         model.addAttribute("usedSizePercent", usedSizePercent); // 传递double值而不是字符串
+        model.addAttribute("space", space); // 添加空间详细信息
         return "user/space";
     }
 
@@ -160,6 +165,35 @@ public class UserController {
             model.addAttribute("message", "空间扩容成功！您已增加100MB存储空间。");
         } else {
             model.addAttribute("error", "空间扩容失败，请稍后重试。");
+        }
+
+        // 重新加载空间信息
+        return "redirect:/user/size";
+    }
+    
+    // 提交空间扩容申请
+    @PostMapping("/apply-expansion")
+    public String applyExpansion(@RequestParam("expansionSize") Long expansionSize,
+                                 HttpServletRequest request,
+                                 Model model) {
+        User loginUser = (User) request.getSession().getAttribute("loginUser");
+        if (loginUser == null) {
+            return "redirect:/user/login";
+        }
+
+        Long userId = loginUser.getUserId();
+        // 将MB转换为字节
+        Long applySize = expansionSize * 1024 * 1024L;
+
+        try {
+            Boolean result = spaceService.submitExpansionApplication(userId, applySize);
+            if (result) {
+                model.addAttribute("message", "空间扩容申请提交成功，请等待管理员审核。");
+            } else {
+                model.addAttribute("error", "空间扩容申请提交失败，请稍后重试。");
+            }
+        } catch (Exception e) {
+            model.addAttribute("error", "空间扩容申请提交异常：" + e.getMessage());
         }
 
         // 重新加载空间信息
