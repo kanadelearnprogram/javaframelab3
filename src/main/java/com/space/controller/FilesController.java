@@ -451,7 +451,7 @@ public class FilesController {
         return "redirect:/user/size";
     }
 
-    // todo 图片轮播
+    // 图片轮播
     @GetMapping("/listImg")
     public String listImg(HttpServletRequest request, Model model){
         User user = (User) request.getSession().getAttribute("loginUser");

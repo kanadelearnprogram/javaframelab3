@@ -102,7 +102,7 @@ public interface FileMapper {
      * @return 文件列表
      */
     @Select("SELECT file_id, user_id, file_name, file_path, file_size, file_type, upload_time, status, download_count " +
-            "FROM t_file where is_delete = 0 and status =0 ORDER BY download_count DESC and review = 1")
+            "FROM t_file where is_delete = 0 and status =0 and review = 1 ORDER BY download_count DESC ")
     @Results({
         @Result(property = "id", column = "file_id"),
         @Result(property = "userId", column = "user_id"),

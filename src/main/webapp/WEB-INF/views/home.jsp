@@ -25,6 +25,24 @@
             border-radius: 3px;
             margin-left: 5px;
         }
+        
+        /* 预览容器样式 */
+        .preview-container {
+            display: none;
+            margin-top: 10px;
+            text-align: center;
+        }
+        
+        .preview-container img {
+            max-width: 100%;
+            max-height: 400px;
+        }
+        
+        .preview-container audio,
+        .preview-container video {
+            width: 100%;
+            max-width: 500px;
+        }
     </style>
 </head>
 <body>
@@ -55,7 +73,6 @@
                     <p>欢迎回来，您可以开始管理您的文件了。</p>
                     <div class="actions">
                         <a href="<c:url value='/user/size'/>" class="btn primary">查看存储空间</a>
-                        <a href="<c:url value='/upload'/>" class="btn secondary">文件管理</a>
                     </div>
                 </div>
             </c:if>
@@ -76,7 +93,6 @@
         </c:if>
 
         <!-- 显示所有文件 -->
-<%--        todo 文件大小MB--%>
         <section class="files-section">
             <h3>所有文件</h3>
             <c:if test="${not empty allFiles}">
@@ -98,7 +114,6 @@
                                 <th>操作</th>
                             </tr>
                         </thead>
-<%--                        todo 添加置顶文件块--%>
                         <tbody>
                             <c:forEach var="file" items="${allFiles}">
                                 <tr>
@@ -114,7 +129,18 @@
                                     </td>
                                     <td>${file.downloadCount}</td>
                                     <td>${fn:substring(file.uploadTime, 0, 10)}</td>
-                                    <td><a href="<c:url value='/download/${file.id}'/>" class="btn secondary">下载</a></td>
+                                    <td>
+                                        <a href="<c:url value='/download/${file.id}'/>" class="btn secondary">下载</a>
+                                        <c:if test='${file.fileType == "图片" || file.fileType == "音频" || file.fileType == "视频"}'>
+                                            <a href="<c:url value='/preview/${file.id}'/>" class="btn secondary" target="_blank">浏览</a>
+                                        </c:if>
+                                    </td>
+                                </tr>
+                                <!-- 预览容器 -->
+                                <tr class="preview-row" id="preview-${file.id}" style="display: none;">
+                                    <td colspan="6">
+                                        <div class="preview-container" id="container-${file.id}"></div>
+                                    </td>
                                 </tr>
                             </c:forEach>
                         </tbody>
@@ -141,5 +167,53 @@
             </div>
         </section>
     </div>
+    
+    <script>
+        function togglePreview(fileId, fileType, button) {
+            const previewRow = document.getElementById('preview-' + fileId);
+            const container = document.getElementById('container-' + fileId);
+            
+            if (previewRow.style.display === 'table-row') {
+                // 隐藏预览
+                previewRow.style.display = 'none';
+                button.textContent = '预览';
+                container.innerHTML = '';
+            } else {
+                // 显示预览
+                fetch('/preview/' + fileId)
+                    .then(response => {
+                        if (response.ok) {
+                            return response.blob();
+                        }
+                        throw new Error('预览失败');
+                    })
+                    .then(blob => {
+                        const url = URL.createObjectURL(blob);
+                        let element;
+                        
+                        if (fileType === '图片') {
+                            element = document.createElement('img');
+                            element.src = url;
+                        } else if (fileType === '音频') {
+                            element = document.createElement('audio');
+                            element.controls = true;
+                            element.src = url;
+                        } else if (fileType === '视频') {
+                            element = document.createElement('video');
+                            element.controls = true;
+                            element.src = url;
+                        }
+                        
+                        container.appendChild(element);
+                        previewRow.style.display = 'table-row';
+                        button.textContent = '隐藏预览';
+                    })
+                    .catch(error => {
+                        container.innerHTML = '<p style="color: red;">预览加载失败: ' + error.message + '</p>';
+                        previewRow.style.display = 'table-row';
+                    });
+            }
+        }
+    </script>
 </body>
 </html>

@@ -127,7 +127,7 @@ public class AdminController {
     
     // 审核空间扩容申请操作
     @PostMapping("/review-expansion")
-    public String reviewExpansion(@RequestParam("id") Long userId,
+    public String reviewExpansion(@RequestParam("userId") Long userId,
                                   @RequestParam("action") String action,
                                   @RequestParam(value = "reason", required = false) String reason,
                                   HttpServletRequest request,
