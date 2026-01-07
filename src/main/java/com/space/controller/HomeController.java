@@ -85,6 +85,7 @@ public class HomeController {
         SqlSession sqlSession = null;
         try {
             // todo 修改成多表查询
+            // todo 动态sql
             sqlSession = MyBatisUtil.getSession();
             // 2.1 查询当前登录用户的文件列表（也可查所有文件，按需调整）
             FileMapper fileMapper = sqlSession.getMapper(FileMapper.class);

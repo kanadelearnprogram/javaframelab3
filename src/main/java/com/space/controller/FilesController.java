@@ -87,7 +87,7 @@ public class FilesController {
         List<Files> uploadedFiles = fileService.listFile(user.getUserId());
         model.addAttribute("uploadedFiles", uploadedFiles);
         model.addAttribute("userId", user.getUserId());
-        return "user/space";
+        return "redirect:/user/size";
     }
     
     @PostMapping("/upload")
@@ -104,7 +104,7 @@ public class FilesController {
         
         if (file.isEmpty()) {
             redirectAttributes.addFlashAttribute("message", "请选择文件");
-            return "redirect:/upload";
+            return "redirect:/user/size";
         }
 
         try {
@@ -118,7 +118,7 @@ public class FilesController {
             long size = file.getSize();
             if (!(totalSize > usedSize + size)) {
                 redirectAttributes.addFlashAttribute("message", "文件过大或剩余空间不足");
-                return "redirect:/upload";
+                return "redirect:/user/size";
             }
 
             String originalFilename = file.getOriginalFilename();
@@ -154,8 +154,7 @@ public class FilesController {
             e.printStackTrace();
             redirectAttributes.addFlashAttribute("message", "文件上传失败: " + e.getMessage());
         }
-
-        return "redirect:/upload";
+        return "redirect:/user/size";
     }
     
     @GetMapping("/download/{fileId}")

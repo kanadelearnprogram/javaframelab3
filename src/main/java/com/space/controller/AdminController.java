@@ -63,7 +63,7 @@ public class AdminController {
 
     // 审核文件操作
     @PostMapping("/review")
-    public String reviewFile(@RequestParam("id") Long fileId,
+    public String reviewFile(@RequestParam("fileId") Long fileId,
                              @RequestParam("action") String action,
                              @RequestParam(value = "reason", required = false) String reason,
                              HttpServletRequest request,
